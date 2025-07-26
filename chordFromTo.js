@@ -4,6 +4,7 @@
 
 // Animation state
 let animationFrameId = null;
+let hasPositionedHighlight = false;
 
 /**
  * Generate alternating chord list
@@ -26,24 +27,23 @@ function generateChordList(fromChord, toChords) {
 function createChordWrapper() {
     const wrapper = document.createElement('div');
     wrapper.className = 'chord-image-wrapper';
-    wrapper.style.padding = '12px';
+    //wrapper.style.padding = '12px';
     wrapper.style.borderRadius = '12px';
     wrapper.style.display = 'flex';
     wrapper.style.justifyContent = 'center';
     wrapper.style.alignItems = 'center';
-    wrapper.style.height = '100%';
     wrapper.style.backdropFilter = 'blur(3px)';
-    wrapper.style.WebkitBackdropFilter = 'blur(3px)'; // Safari support
-    
-    // Set theme-specific background
+    wrapper.style.WebkitBackdropFilter = 'blur(3px)';
+    //wrapper.style.width = '100%';
+    wrapper.style.height = '100%';
+
     const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
     if (isDarkMode) {
-        wrapper.style.backgroundColor = 'rgba(255, 255, 255, 0.07)';
-        wrapper.style.boxShadow = '0 0 8px rgba(255, 255, 255, 0.12)';
+        wrapper.style.backgroundColor = 'rgba(122, 183, 255, 0.5)';
     } else {
-        wrapper.style.backgroundColor = 'rgba(0, 0, 0, 0.03)';
+        wrapper.style.backgroundColor = 'rgba(122, 183, 255, 0.5)';
     }
-    
+
     return wrapper;
 }
 
@@ -54,14 +54,14 @@ function createChordWrapper() {
  */
 function createChordImage(chord) {
     const wrapper = createChordWrapper();
-    
+
     const img = document.createElement('img');
     img.src = `chords/${chord}.png`;
     img.alt = chord;
     img.style.maxWidth = '100%';
     img.style.maxHeight = '100%';
     img.style.objectFit = 'contain';
-    
+
     wrapper.appendChild(img);
     return wrapper;
 }
@@ -71,28 +71,22 @@ function createChordImage(chord) {
  * @param {Object} exercise - Exercise configuration
  * @param {string} containerId - ID of the container element
  * @param {Object} helpers - Helper functions and state
- * @param {Function} helpers.metronomeTick - Function to play metronome tick
- * @param {Function} helpers.getBPM - Function to get current BPM
- * @param {Object} helpers.timer - Timer controller
- * @param {Function} helpers.isPaused - Function to check if exercise is paused
  */
 export async function execute(exercise, containerId, helpers) {
-    // Get container and ensure it exists
     const container = document.getElementById(containerId);
     if (!container) {
         console.error(`Container #${containerId} not found`);
         return;
     }
 
-    // Clear container and set up layout
     container.innerHTML = '';
     container.style.display = 'flex';
     container.style.justifyContent = 'center';
     container.style.alignItems = 'center';
     container.style.gap = '20px';
     container.style.height = '100%';
+    container.style.position = 'relative';
 
-    // Create left and right image containers
     const leftContainer = document.createElement('div');
     const rightContainer = document.createElement('div');
     [leftContainer, rightContainer].forEach(div => {
@@ -104,65 +98,112 @@ export async function execute(exercise, containerId, helpers) {
         div.style.position = 'relative';
         div.style.overflow = 'hidden';
     });
+
+    // Add containers to the main container
     container.appendChild(leftContainer);
     container.appendChild(rightContainer);
 
-    // Generate chord list
+    // Create and append fixed highlight frame
+    const highlightFrame = document.createElement('div');
+    highlightFrame.style.position = 'absolute';
+    highlightFrame.style.display = 'none';
+    highlightFrame.style.border = '6px solid #7ab7ff';
+    highlightFrame.style.borderRadius = '16px';
+    highlightFrame.style.pointerEvents = 'none';
+    highlightFrame.style.zIndex = '100';
+    highlightFrame.style.boxSizing = 'border-box';
+    container.appendChild(highlightFrame);
+
     const chordsList = generateChordList(exercise.chordFrom, exercise.chordsTo);
     if (chordsList.length === 0) return;
 
-    // Initialize state
     let currentIndex = 0;
     let previousTick = Date.now();
 
-    // Set up initial chord display
     function updateDisplay(newChordIndex, animate = false) {
-        // Get current and next chords
         const currentChord = chordsList[newChordIndex];
         const nextChordIndex = (newChordIndex + 1) % chordsList.length;
         const nextChord = chordsList[nextChordIndex];
 
-        // Create new images
         const leftImage = createChordImage(currentChord);
         const rightImage = createChordImage(nextChord);
 
-        // Set up transition for smooth animation
+        const leftContent = document.createElement('div');
+        leftContent.style.width = '100%';
+        leftContent.style.height = '100%';
+        leftContent.style.position = 'absolute';
+        leftContent.style.display = 'flex';
+        leftContent.style.justifyContent = 'center';
+        leftContent.style.alignItems = 'center';
+
+        const rightContent = document.createElement('div');
+        rightContent.style.width = '100%';
+        rightContent.style.height = '100%';
+        rightContent.style.display = 'flex';
+        rightContent.style.justifyContent = 'center';
+        rightContent.style.alignItems = 'center';
+
+        leftContent.appendChild(leftImage);
+        rightContent.appendChild(rightImage);
+
         if (animate) {
             leftContainer.style.transition = 'transform 0.2s ease-out';
             rightContainer.style.transition = 'transform 0.2s ease-out';
             leftContainer.style.transform = 'translateX(-100%)';
             rightContainer.style.transform = 'translateX(-100%)';
 
-            // After animation, reset positions and update images
             setTimeout(() => {
                 leftContainer.style.transition = 'none';
                 rightContainer.style.transition = 'none';
                 leftContainer.style.transform = '';
                 rightContainer.style.transform = '';
+
                 leftContainer.innerHTML = '';
                 rightContainer.innerHTML = '';
-                leftContainer.appendChild(leftImage);
-                rightContainer.appendChild(rightImage);
+
+                leftContainer.appendChild(leftContent);
+                rightContainer.appendChild(rightContent);
             }, 200);
         } else {
-            // Initial setup without animation
             leftContainer.innerHTML = '';
             rightContainer.innerHTML = '';
-            leftContainer.appendChild(leftImage);
-            rightContainer.appendChild(rightImage);
+            leftContainer.appendChild(leftContent);
+            rightContainer.appendChild(rightContent);
+
+            if (!hasPositionedHighlight) {
+                setTimeout(() => {
+                    requestAnimationFrame(() => {
+                        const targetImage = leftContainer.querySelector('.chord-image-wrapper');
+                        if (targetImage) {
+                            // Force reflow
+                            void targetImage.offsetHeight;
+
+                            const rect = targetImage.getBoundingClientRect();
+                            const containerRect = container.getBoundingClientRect();
+
+                            highlightFrame.style.width = `${rect.width}px`;
+                            highlightFrame.style.height = `${rect.height}px`;
+                            highlightFrame.style.left = `${rect.left - containerRect.left}px`;
+                            highlightFrame.style.top = `${rect.top - containerRect.top}px`;
+                            highlightFrame.style.transform = 'none';
+                            highlightFrame.style.display = 'block';
+
+                            hasPositionedHighlight = true;
+                        }
+                    });
+                }, 0);
+            }
+
+
         }
     }
 
-    // Set up initial display
     updateDisplay(currentIndex);
 
-    /**
-     * Start animation loop
-     */
     function startAnimation() {
         function loop() {
             if (helpers.isPaused()) {
-                animationFrameId = requestAnimationFrame(loop); // Keep checking while paused
+                animationFrameId = requestAnimationFrame(loop);
                 return;
             }
 
@@ -187,9 +228,6 @@ export async function execute(exercise, containerId, helpers) {
         animationFrameId = requestAnimationFrame(loop);
     }
 
-    /**
-     * Stop animation loop
-     */
     function stopAnimation() {
         if (animationFrameId) {
             cancelAnimationFrame(animationFrameId);
@@ -197,16 +235,13 @@ export async function execute(exercise, containerId, helpers) {
         }
     }
 
-    /**
-     * Update theme-specific styles for chord wrappers
-     */
     function updateChordWrapperStyles() {
         const wrappers = container.querySelectorAll('.chord-image-wrapper');
         const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
-        
+
         wrappers.forEach(wrapper => {
             if (isDarkMode) {
-                wrapper.style.backgroundColor = 'rgba(255, 255, 255, 0.07)';
+                wrapper.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
                 wrapper.style.boxShadow = '0 0 8px rgba(255, 255, 255, 0.12)';
             } else {
                 wrapper.style.backgroundColor = 'rgba(0, 0, 0, 0.03)';
@@ -215,16 +250,12 @@ export async function execute(exercise, containerId, helpers) {
         });
     }
 
-    /**
-     * Clean up resources
-     */
     function cleanup() {
         stopAnimation();
         container.innerHTML = '';
         window.removeEventListener('unload', cleanup);
     }
 
-    // Listen for theme changes to update wrapper styles
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             if (mutation.attributeName === 'data-theme') {
@@ -232,21 +263,18 @@ export async function execute(exercise, containerId, helpers) {
             }
         });
     });
-    
+
     observer.observe(document.documentElement, {
         attributes: true,
         attributeFilter: ['data-theme']
     });
 
-    // Start the animation
     startAnimation();
 
-    // Clean up on window unload
     window.addEventListener('unload', () => {
         observer.disconnect();
         cleanup();
     });
 
-    // Return cleanup function
     return cleanup;
 }

@@ -20,8 +20,8 @@ export function updateTitle(name, type) {
         document.getElementById('titleArea').textContent = "Spider Walk - " + name;
     //} else if (type === 2) {
     //    document.getElementById('titleArea').textContent = "Chords From/To - " + name;
-    //} else if (type === 3) {
-    //    document.getElementById('titleArea').textContent = "Chords Random - " + name;
+    } else if (type === 3) {
+        document.getElementById('titleArea').textContent = "Chords Random - " + name;
     } else {
         document.getElementById('titleArea').textContent = name;
     }

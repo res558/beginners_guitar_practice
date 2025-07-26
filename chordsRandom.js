@@ -4,6 +4,7 @@
 
 // Animation state
 let animationFrameId = null;
+let hasPositionedHighlight = false;
 
 /**
  * Create a wrapper div with theme-aware background styling for chord images
@@ -12,21 +13,20 @@ let animationFrameId = null;
 function createChordWrapper() {
     const wrapper = document.createElement('div');
     wrapper.className = 'chord-image-wrapper';
-    wrapper.style.padding = '12px';
+    //wrapper.style.padding = '12px';
     wrapper.style.borderRadius = '12px';
     wrapper.style.display = 'flex';
     wrapper.style.justifyContent = 'center';
     wrapper.style.alignItems = 'center';
     wrapper.style.height = '100%';
-    wrapper.style.backdropFilter = 'blur(3px)';
-    wrapper.style.WebkitBackdropFilter = 'blur(3px)';
+    //wrapper.style.backdropFilter = 'blur(3px)';
+    //wrapper.style.WebkitBackdropFilter = 'blur(3px)';
 
     const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
     if (isDarkMode) {
-        wrapper.style.backgroundColor = 'rgba(255, 255, 255, 0.07)';
-        wrapper.style.boxShadow = '0 0 8px rgba(255, 255, 255, 0.12)';
+        wrapper.style.backgroundColor = 'rgba(122, 183, 255, 0.5)';
     } else {
-        wrapper.style.backgroundColor = 'rgba(0, 0, 0, 0.03)';
+        wrapper.style.backgroundColor = 'rgba(122, 183, 255, 0.5)';
     }
 
     return wrapper;
@@ -86,6 +86,7 @@ export async function execute(exercise, containerId, helpers) {
     container.style.alignItems = 'center';
     container.style.gap = '20px';
     container.style.height = '100%';
+    container.style.position = 'relative';
 
     const leftContainer = document.createElement('div');
     const rightContainer = document.createElement('div');
@@ -100,6 +101,16 @@ export async function execute(exercise, containerId, helpers) {
     });
     container.appendChild(leftContainer);
     container.appendChild(rightContainer);
+
+    const highlightFrame = document.createElement('div');
+    highlightFrame.style.position = 'absolute';
+    highlightFrame.style.display = 'none';
+    highlightFrame.style.border = '6px solid #7ab7ff';
+    highlightFrame.style.borderRadius = '16px';
+    highlightFrame.style.pointerEvents = 'none';
+    highlightFrame.style.zIndex = '100';
+    highlightFrame.style.boxSizing = 'border-box';
+    container.appendChild(highlightFrame);
 
     let currentChord = getRandomChord(exercise.chordsTo);
     let nextChord = getRandomChord(exercise.chordsTo, currentChord);
@@ -133,6 +144,29 @@ export async function execute(exercise, containerId, helpers) {
             rightContainer.innerHTML = '';
             leftContainer.appendChild(leftImage);
             rightContainer.appendChild(rightImage);
+
+            if (!hasPositionedHighlight) {
+                setTimeout(() => {
+                    requestAnimationFrame(() => {
+                        const targetImage = leftContainer.querySelector('.chord-image-wrapper');
+                        if (targetImage) {
+                            void targetImage.offsetHeight;
+
+                            const rect = targetImage.getBoundingClientRect();
+                            const containerRect = container.getBoundingClientRect();
+
+                            highlightFrame.style.width = `${rect.width}px`;
+                            highlightFrame.style.height = `${rect.height}px`;
+                            highlightFrame.style.left = `${rect.left - containerRect.left}px`;
+                            highlightFrame.style.top = `${rect.top - containerRect.top}px`;
+                            highlightFrame.style.transform = 'none';
+                            highlightFrame.style.display = 'block';
+
+                            hasPositionedHighlight = true;
+                        }
+                    });
+                }, 0);
+            }
         }
     }
 
@@ -178,11 +212,9 @@ export async function execute(exercise, containerId, helpers) {
 
         wrappers.forEach(wrapper => {
             if (isDarkMode) {
-                wrapper.style.backgroundColor = 'rgba(255, 255, 255, 0.07)';
-                wrapper.style.boxShadow = '0 0 8px rgba(255, 255, 255, 0.12)';
+                wrapper.style.backgroundColor = 'rgba(122, 183, 255, 0.5)';
             } else {
-                wrapper.style.backgroundColor = 'rgba(0, 0, 0, 0.03)';
-                wrapper.style.boxShadow = 'none';
+                wrapper.style.backgroundColor = 'rgba(122, 183, 255, 0.5)';
             }
         });
     }
