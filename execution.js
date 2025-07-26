@@ -199,6 +199,10 @@ class ExerciseController {
      * @param {number} total - Total number of exercises
      */
     updateNavigationButtons(currentIndex, total) {
+        
+        this.playButton.disabled = false;
+        this.playButton.classList.remove('disabled');
+
         if (currentIndex <= 0) {
             this.prevButton.disabled = true;
             this.prevButton.classList.add('disabled');
@@ -242,6 +246,8 @@ class ExerciseController {
         this.nextButton.disabled = true;
         this.prevButton.classList.add('disabled');
         this.nextButton.classList.add('disabled');
+        this.playButton.disabled = true;
+        this.playButton.classList.add('disabled');
     }
 
     /**

@@ -289,36 +289,9 @@
                     Spider Walk
                     <span class="accordion-arrow">▶</span>
                 </div>
-                <div class="accordion-content">
-                    <div id="spiderWalkList">
-                    
-                            </select>
-                            <button class="add-spider-btn" style="margin-left:8px;">Add</button>
-                        </div>
-                        <div class="spider-item" data-name="Diagonal 3"
-                            style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-                            <span style="flex:1;">Diagonal 3</span>
-                            <select class="minute-select" style="width:50px;">
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3" selected>3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                            </select>
-                            <button class="add-spider-btn" style="margin-left:8px;">Add</button>
-                        </div>
-                        <div class="spider-item" data-name="Wave"
-                            style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-                            <span style="flex:1;">Wave</span>
-                            <select class="minute-select" style="width:50px;">
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3" selected>3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                            </select>
-                            <button class="add-spider-btn" style="margin-left:8px;">Add</button>
-                        </div>
+                <div class="accordion-content" style="overflow-y: auto;">
+                    <div id="spiderWalkList" >
+                          
                     </div>
                 </div>
             </div>
@@ -521,7 +494,7 @@
                     <th></th>
                 </tr>
             </thead>
-            <tbody id="exerciseTableBody">
+            <tbody id="exerciseTableBody" style="overflow-y: auto;">
                 <!-- Dynamic rows will be rendered here by JS -->
             </tbody>
         </table>
@@ -572,11 +545,6 @@
             if (!select) return;
             select.innerHTML = '';
             // Add 'None' as the first option and select it by default
-            const noneOpt = document.createElement('option');
-            noneOpt.value = 'None';
-            noneOpt.textContent = 'None';
-            noneOpt.selected = true;
-            select.appendChild(noneOpt);
             Object.keys(CHORD_IMAGE_MAP).forEach(key => {
                 const opt = document.createElement('option');
                 opt.value = key;
@@ -940,7 +908,7 @@
             sessionStorage.setItem('theme', theme);
             // Set cookie for 7 days
             document.cookie = 'theme=' + encodeURIComponent(theme) + '; path=/; max-age=' + (60 * 60 * 24 * 7);
-            themeIcon.src = theme === 'dark' ? 'practice/sun.svg' : 'practice/moon.svg';
+            themeIcon.src = theme === 'dark' ? 'sun.svg' : 'moon.svg';
             themeIcon.alt = theme === 'dark' ? 'Dark mode' : 'Light mode';
         }
         // Initial theme
