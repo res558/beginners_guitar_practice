@@ -118,7 +118,7 @@ class ExerciseController {
 
         try {
             // Prepare UI
-            await getReady(this.currentExercise.name, this.currentExercise.duration);
+            await getReady(this.currentExercise.name, this.currentExercise.duration, this.currentExercise.type);
         } catch (error) {
             // If countdown was cancelled, re-enable navigation and exit
             this.enableNavigation();

@@ -1,19 +1,19 @@
-# Beginner's Guitar Practice
+# 🎸 Beginner's Guitar Practice
 
 A dynamic, interactive tool designed to help beginners develop and improve their guitar playing techniques through structured exercises.
 
-## 🎸 Overview
+## Overview
 
 This application was created as a personal practice aid and is now available to help other guitar enthusiasts in their learning journey. It focuses on three fundamental aspects of guitar playing:
 - Spider Walk exercises for finger dexterity
 - Chord change practice
 - Strumming pattern exercises
 
-## ✨ Features
+## Features
 
 ### 1. Spider Walk Practice
-![Alt text](project_images/spider_config.png)
-![Alt text](project_images/spider_exec.png)
+![Selection and setup of Spider Walk exercise](project_images/spider_config.png)
+![Execution of a Spider Walk exercise](project_images/spider_exec.png)
 
 - Multiple walking patterns available
 - Helps develop:
@@ -24,8 +24,8 @@ This application was created as a personal practice aid and is now available to 
 
 
 ### 2. Chord Changes Practice
-![Alt text](project_images/chords_config.png)
-![Alt text](project_images/Chords_exec.png)
+![Selection and setup of a chord change exercise](project_images/chords_config.png)
+![Execution of a chord change exercise](project_images/Chords_exec.png)
 
 
 Available in two modes:
@@ -43,14 +43,14 @@ Available in two modes:
 - Great for real-world playing preparation
 
 ### 3. Strumming Patterns
-![Alt text](project_images/strum_config.png)
-![Alt text](project_images/strum_exec.png)
+![Selection and setup of a Strumming exercise](project_images/strum_config.png)
+![Execution of a strumming exercise](project_images/strum_exec.png)
 - Customizable strumming patterns (e.g., DDUDUD, DUDDU, DDDD, UUUU)
 - Multiple chord selection
 - Visual guidance for each strum
 - Combine different chords with various strumming patterns
 
-## ⚙️ Features Common to All Exercises
+## Features Common to All Exercises
 
 - Configurable duration for each exercise
 - Built-in metronome with adjustable speed
@@ -59,7 +59,7 @@ Available in two modes:
 - Multiple exercise configurations can be queued
 - Dynamic visual guidance synchronized with metronome beats
 
-## 🎯 How to Use
+## How to Use
 
 1. Choose your exercise type (Spider Walk, Chord Changes, or Strumming)
 2. Configure your exercise parameters
@@ -69,14 +69,14 @@ Available in two modes:
 
 You can add multiple exercises to your practice queue, each with its own unique configuration.
 
-## 📝 License
+## License
 
 "Beginner's Guitar Practice" is licensed under AGPL-3.0 with Commons Clause.
 - Free for non-commercial use
 - Modifications and sharing allowed with attribution
 - See [LICENSE](LICENSE) for full details
 
-## 👤 Author
+## Author
 
 Created by [reinaldo558](https://github.com/reinaldo558)
 

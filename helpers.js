@@ -15,9 +15,19 @@ export function updateTimerLabel(seconds) {
  * Updates exercise title
  * @param {string} name - Exercise name
  */
-export function updateTitle(name) {
-    document.getElementById('titleArea').textContent = name;
+export function updateTitle(name, type) {
+    if (type === 1) {
+        document.getElementById('titleArea').textContent = "Spider Walk - " + name;
+    //} else if (type === 2) {
+    //    document.getElementById('titleArea').textContent = "Chords From/To - " + name;
+    //} else if (type === 3) {
+    //    document.getElementById('titleArea').textContent = "Chords Random - " + name;
+    } else {
+        document.getElementById('titleArea').textContent = name;
+    }
+    
 }
+
 
 /**
  * Shows countdown and prepares exercise
@@ -25,12 +35,26 @@ export function updateTitle(name) {
  * @param {number} durationInMin - Exercise duration in minutes
  * @returns {Promise} Resolves when countdown is complete
  */
-export async function getReady(name, durationInMin) {
-    updateTitle(name);
+export async function getReady(name, durationInMin, type) {
+    updateTitle(name, type);
     updateTimerLabel(durationInMin * 60);
     
     const executionArea = document.getElementById('executionArea');
-    executionArea.textContent = 'Get Ready!';
+    
+    // Create centered container div
+    const centerDiv = document.createElement('div');
+    centerDiv.style.width = '100%';
+    centerDiv.style.height = '100%';
+    centerDiv.style.position = 'absolute';
+    centerDiv.style.top = '0';
+    centerDiv.style.left = '0';
+    centerDiv.style.display = 'flex';
+    centerDiv.style.justifyContent = 'center';
+    centerDiv.style.alignItems = 'center';
+    centerDiv.style.fontSize = '5em';
+    
+    executionArea.appendChild(centerDiv);
+    centerDiv.textContent = 'Get Ready!';
 
     // Countdown logic using Promise
     const countdown = async (seconds) => {
@@ -40,14 +64,14 @@ export async function getReady(name, durationInMin) {
             const countInterval = setInterval(() => {
                 if (remaining === 0) {
                     clearInterval(countInterval);
-                    executionArea.textContent = 'Start!';
-                    // Show "Start!" for 1 second, then clear the area
+                    centerDiv.textContent = 'Start!';
+                    // Show "Start!" for 1 second, then clean up
                     setTimeout(() => {
-                        executionArea.innerHTML = '';
+                        centerDiv.remove(); // Remove the entire centered div
                         resolve();
                     }, 1000);
                 } else {
-                    executionArea.textContent = `Get Ready... ${remaining}`;
+                    centerDiv.textContent = `Get Ready... ${remaining}`;
                     remaining--;
                 }
             }, 1000);
@@ -57,6 +81,7 @@ export async function getReady(name, durationInMin) {
     await countdown(4);
     return true;
 }
+
 
 /**
  * Load exercise list from available storage

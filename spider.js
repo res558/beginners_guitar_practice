@@ -57,7 +57,7 @@ export async function execute(exercise, containerId, helpers) {
     // Create exercise display elements
     const titleElement = document.createElement('div');
     titleElement.style.textAlign = 'center';
-    titleElement.textContent = exercise.name;
+    titleElement.textContent = `Spider Walk - ${exercise.name}`;
     //container.appendChild(titleElement);
 
     // Create fretboard container
