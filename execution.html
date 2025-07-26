@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Execution</title>
+    <link rel="preload" href="sun.svg" as="image">
+    <link rel="preload" href="moon.svg" as="image">
+    <style>
+        :root {
+            --primary-bg: #f9f9f9;
+            --primary-text: #222;
+            --accent: #4f8cff;
+            --card-bg: #fff;
+            --border: #e0e0e0;
+            --button-bg: #4f8cff;
+            --button-text: #fff;
+            --muted-text: #666;
+            --section-divider: #e0e0e0;
+        }
+
+        [data-theme="dark"] {
+            --primary-bg: #181a1b;
+            --primary-text: #f1f1f1;
+            --accent: #7ab7ff;
+            --card-bg: #23272a;
+            --border: #333;
+            --button-bg: #7ab7ff;
+            --button-text: #181a1b;
+            --muted-text: #999;
+            --section-divider: #333;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--primary-bg);
+            color: var(--primary-text);
+            min-height: 100vh;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .theme-toggle {
+            background: var(--border);
+            border: none;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            position: fixed;
+            top: 1%;
+            right: 1%;
+            transition: background 0.2s;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent);
+        }
+
+        .theme-toggle img {
+            width: 28px;
+            height: 28px;
+            pointer-events: none;
+        }
+
+        .section {
+            padding: 1rem;
+            border-bottom: 1px solid var(--section-divider);
+        }
+
+        /* Section 1: Page Title Area */
+        #pageTitleArea {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        #pageTitleArea h1 {
+            font-size: 2rem;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        /* Section 2: Metronome Area */
+        #metronomeArea {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .metronome-left {
+            flex: 0 0 80%;
+        }
+
+        .metronome-right {
+            flex: 0 0 20%;
+        }
+
+        .bpm-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .bpm-button {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slider-container {
+            width: 100%;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 5px;
+            border-radius: 5px;
+            background: var(--border);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+        }
+
+        .sound-toggle {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        /* Section 3: Exercise Title Area */
+        #titleArea {
+            text-align: center;
+            font-size: 1.5rem;
+            padding: 1rem;
+        }
+
+        /* Section 4: Execution Area */
+        #executionArea {
+            flex: 1;
+            padding: 1rem;
+            min-height: 200px;
+        }
+
+        /* Section 5: Timer Area */
+        #timerArea {
+            text-align: center;
+            padding: 0.5rem;
+            color: var(--muted-text);
+            font-size: 0.9rem;
+        }
+
+        /* Section 6: Player Controls Area */
+        #playerControlsArea {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .control-button {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            min-width: 80px;
+        }
+
+        .control-button:hover {
+            opacity: 0.9;
+        }
+
+        .control-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--border);
+        }
+
+        @media (max-width: 600px) {
+            #metronomeArea {
+                flex-direction: column;
+            }
+
+            .metronome-left, .metronome-right {
+                flex: 0 0 100%;
+            }
+
+            .control-button {
+                min-width: 60px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode">
+        <img id="themeIcon" src="moon.svg" alt="Toggle theme">
+    </button>
+
+    <!-- Section 1: Page Title Area -->
+    <div id="pageTitleArea" class="section">
+        <h1>Exercise Execution</h1>
+    </div>
+
+    <!-- Section 2: Metronome Area -->
+    <div id="metronomeArea" class="section">
+        <div class="metronome-left">
+            <div class="bpm-controls">
+                <button class="bpm-button" id="decreaseBpm">-</button>
+                <span id="bpmDisplay">Metronome: 40 BPM</span>
+                <button class="bpm-button" id="increaseBpm">+</button>
+            </div>
+            <div class="slider-container">
+                <input type="range" id="bpmSlider" min="10" max="200" value="40">
+            </div>
+        </div>
+        <div class="metronome-right">
+            <div>Sound</div>
+            <button class="sound-toggle" id="soundToggle">Off ✖️</button>
+        </div>
+    </div>
+
+    <!-- Section 3: Exercise Title Area -->
+    <div id="titleArea" class="section"></div>
+
+    <!-- Section 4: Execution Area -->
+    <div id="executionArea" class="section"></div>
+
+    <!-- Section 5: Timer Area -->
+    <div id="timerArea" class="section">0:00</div>
+
+    <!-- Section 6: Player Controls Area -->
+    <div id="playerControlsArea" class="section">
+        <button class="control-button" id="prevBtn">Previous</button>
+        <button class="control-button" id="playButton">Play</button>
+        <button class="control-button" id="nextBtn">Next</button>
+    </div>
+
+    <script type="module" src="execution.js"></script>
+</body>
+
+</html>
