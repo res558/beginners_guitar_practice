@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exercise Execution</title>
+    <title>Beginner's Guitar Practice</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preload" href="sun.svg" as="image">
     <link rel="preload" href="moon.svg" as="image">
     <style>
@@ -187,9 +188,15 @@
         /* Section 6: Player Controls Area */
         #playerControlsArea {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             gap: 1rem;
             padding: 1rem;
+        }
+
+        .controls-center {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
         }
 
         .control-button {
@@ -239,7 +246,7 @@
 
     <!-- Section 1: Page Title Area -->
     <div id="pageTitleArea" class="section">
-        <h1>Exercise Execution</h1>
+        <h1>Practice Mode</h1>
     </div>
 
     <!-- Section 2: Metronome Area -->
@@ -271,12 +278,31 @@
 
     <!-- Section 6: Player Controls Area -->
     <div id="playerControlsArea" class="section">
-        <button class="control-button" id="prevBtn">Previous</button>
-        <button class="control-button" id="playButton">Play</button>
-        <button class="control-button" id="nextBtn">Next</button>
+        <button class="control-button" onclick="goBack()">Back</button>
+        <div class="controls-center">
+            <button class="control-button" id="prevBtn">Previous</button>
+            <button class="control-button" id="playButton">Play</button>
+            <button class="control-button" id="nextBtn">Next</button>
+        </div>
+        <div style="width: 80px;"></div><!-- Spacer to balance the layout -->
     </div>
 
     <script type="module" src="execution.js"></script>
+    <script>
+        async function goBack() {
+            // Get the controller instance from the module
+            const controller = await import('./execution.js');
+            if (controller && controller.default) {
+                // Call pause if available
+                const instance = controller.default.getInstance();
+                if (instance && instance.pause) {
+                    instance.pause();
+                }
+            }
+            // Navigate back to index.html
+            window.location.href = 'index.html';
+        }
+    </script>
 </body>
 
 </html>
