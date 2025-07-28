@@ -40,16 +40,16 @@ class ExerciseController {
     async init() {
         // Load exercises
         this.exercises = loadExerciseList();
-        
+
         // Setup theme
         setupThemeToggle();
-        
+
         // Setup metronome
         setupMetronomeUI();
-        
+
         // Setup controls
         this.setupEventListeners();
-        
+
         // Update UI state
         this.updateNavigationButtons(this.currentIndex, this.exercises.length);
     }
@@ -111,7 +111,7 @@ class ExerciseController {
         // Get exercise data
         this.currentIndex = index;
         this.currentExercise = this.exercises[index];
-        
+
         // Update navigation buttons but disable them during countdown
         this.updateNavigationButtons(this.currentIndex, this.exercises.length);
         this.disableNavigation();
@@ -135,7 +135,7 @@ class ExerciseController {
         // Load and start exercise module
         try {
             const module = await this.moduleMap[this.currentExercise.type]();
-            
+
             // Helper functions for exercise modules
             const helpers = {
                 metronomeTick: playTick,
@@ -170,8 +170,114 @@ class ExerciseController {
             await this.cleanup();
             this.playButton.textContent = 'Play';
             updateTitle('Workout Complete!');
+            this.showFireworksCelebration();
+            this.disableNavigation();
         }
     }
+
+
+    showFireworksCelebration() {
+        // Create canvas overlay
+        const canvas = document.createElement('canvas');
+        Object.assign(canvas.style, {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            pointerEvents: 'none',
+            zIndex: 9999,
+        });
+        document.body.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Firework + particle logic
+        const particles = [];
+
+        function spawnGuitarIconAndFirework() {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height * 0.8;
+
+            // Guitar emoji "exploding" into particles
+            const emoji = document.createElement('div');
+            emoji.textContent = '🎸';
+            Object.assign(emoji.style, {
+                position: 'fixed',
+                left: `${x}px`,
+                top: `${y}px`,
+                transform: 'translate(-50%, -50%)',
+                fontSize: '2rem',
+                zIndex: 10000,
+                animation: 'blink-out 0.5s forwards',
+                pointerEvents: 'none',
+            });
+            document.body.appendChild(emoji);
+
+            // Remove emoji after blink and spawn particles
+            setTimeout(() => {
+                emoji.remove();
+                spawnParticles(x, y);
+            }, 500);
+        }
+
+        function spawnParticles(x, y) {
+            const count = 30 + Math.floor(Math.random() * 30);
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const speed = Math.random() * 4 + 2;
+                particles.push({
+                    x, y,
+                    dx: Math.cos(angle) * speed,
+                    dy: Math.sin(angle) * speed,
+                    radius: 2 + Math.random() * 2,
+                    color: `hsl(${Math.floor(Math.random() * 360)}, 100%, 60%)`,
+                    life: 60,
+                });
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, i) => {
+                p.x += p.dx;
+                p.y += p.dy;
+                p.life--;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
+                ctx.fillStyle = p.color;
+                ctx.fill();
+            });
+            for (let i = particles.length - 1; i >= 0; i--) {
+                if (particles[i].life <= 0) particles.splice(i, 1);
+            }
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Spawn fireworks and guitars continuously for 5 seconds
+        const interval = setInterval(spawnGuitarIconAndFirework, 300);
+        setTimeout(() => {
+            clearInterval(interval);
+            setTimeout(() => {
+                canvas.remove();
+            }, 1000);
+        }, 5000);
+
+        // Keyframe animation for emoji blink
+        const style = document.createElement('style');
+        style.textContent = `
+        @keyframes blink-out {
+            0% { opacity: 1; transform: scale(1) translate(-50%, -50%); }
+            100% { opacity: 0; transform: scale(0.1) translate(-50%, -50%); }
+        }
+    `;
+        document.head.appendChild(style);
+    }
+
+
 
     /**
      * Move to previous exercise
@@ -199,7 +305,7 @@ class ExerciseController {
      * @param {number} total - Total number of exercises
      */
     updateNavigationButtons(currentIndex, total) {
-        
+
         this.playButton.disabled = false;
         this.playButton.classList.remove('disabled');
 
@@ -228,7 +334,7 @@ class ExerciseController {
             await this.currentCleanup();
             this.currentCleanup = null;
         }
-        
+
         if (this.timer) {
             this.timer.stop();
             this.timer = null;
@@ -243,10 +349,10 @@ class ExerciseController {
      */
     disableNavigation() {
         this.prevButton.disabled = true;
-        this.nextButton.disabled = true;
+        this.nextButton.disabled = true;    
+        this.playButton.disabled = true;
         this.prevButton.classList.add('disabled');
         this.nextButton.classList.add('disabled');
-        this.playButton.disabled = true;
         this.playButton.classList.add('disabled');
     }
 

@@ -143,14 +143,34 @@
             -webkit-appearance: none;
         }
 
+        /* Chrome, Safari, Opera */
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 15px;
             height: 15px;
             border-radius: 50%;
-            background: var(--accent);
+            background: #7ab7ff;
             cursor: pointer;
         }
+
+        /* Firefox */
+        input[type="range"]::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #7ab7ff;
+            cursor: pointer;
+        }
+
+        /* IE/Edge */
+        input[type="range"]::-ms-thumb {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #7ab7ff;
+            cursor: pointer;
+        }
+
 
         .sound-toggle {
             background: var(--button-bg);
@@ -234,8 +254,6 @@
                 font-size: 0.9rem;
             }
         }
-
-
     </style>
 </head>
 

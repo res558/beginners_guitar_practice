@@ -1,4 +1,5 @@
 let animationFrameId = null;
+let loop = null;
 
 export async function execute(exercise, containerId, helpers) {
     const container = document.getElementById(containerId);
@@ -40,7 +41,7 @@ export async function execute(exercise, containerId, helpers) {
     const beatLabels = ['1', '+', '2', '+', '3', '+', '4', '+'];
     const directions = ['↓', '↑', '↓', '↑', '↓', '↑', '↓', '↑'];
 
-    directions.forEach((arrow, i) => {
+    directions.forEach((arrow) => {
         const arrowEl = document.createElement('div');
         arrowEl.textContent = arrow;
         arrowEl.style.fontSize = '5em';
@@ -100,14 +101,154 @@ export async function execute(exercise, containerId, helpers) {
     mainWrapper.appendChild(patternDiv);
     container.appendChild(mainWrapper);
 
-    const chordList = exercise.chordsTo.includes('None') ? ['None'] : exercise.chordsTo;
-    let currentChord = randomChord(chordList);
-    let nextChord = randomChord(chordList);
-    nowImg.src = chordImage(currentChord);
-    nextImg.src = chordImage(nextChord);
-
+    // These were missing!
     let subTickCount = 0;
     let previousTick = Date.now();
+
+    let chordList = exercise.chordsTo || [];
+    let onlyNone = chordList.length === 1 && chordList[0] === 'None';
+
+    if (onlyNone) {
+        chordsDiv.style.display = 'none';
+    } else {
+        chordList = chordList.filter(ch => ch !== 'None');
+
+        if (chordList.length === 1) {
+            nowLabel.style.display = 'none';
+            nowWrapper.style.display = 'none';
+            nextImg.src = chordImage(chordList[0]);
+        } else if (chordList.length === 2 || chordList.length === 3) {
+            let chordIndex = 0;
+            let nextIndex = 1;
+            nowImg.src = chordImage(chordList[chordIndex]);
+            nextImg.src = chordImage(chordList[nextIndex]);
+
+            loop = function () {
+                if (helpers.isPaused()) {
+                    animationFrameId = requestAnimationFrame(loop);
+                    return;
+                }
+
+                const now = Date.now();
+                const bpm = helpers.getBPM?.() || 40;
+                const halfInterval = 60000 / bpm / 2;
+
+                if (now - previousTick >= halfInterval) {
+                    const index = subTickCount % 8;
+                    const active = exercise.pattern[index] === 1;
+
+                    highlightColumn(index, active);
+
+                    if (active && index % 2 === 0) {
+                        helpers.metronomeTick();
+                    }
+
+                    if (index === 0 && subTickCount !== 0) {
+                        chordIndex = (chordIndex + 1) % chordList.length;
+                        nextIndex = (chordIndex + 1) % chordList.length;
+                        nowImg.src = chordImage(chordList[chordIndex]);
+                        nextImg.src = chordImage(chordList[nextIndex]);
+                    }
+
+                    subTickCount++;
+                    previousTick = now;
+                }
+
+                if (helpers.timer.getRemaining() > 0) {
+                    animationFrameId = requestAnimationFrame(loop);
+                } else {
+                    stopAnimation();
+                }
+            };
+        } else if (chordList.length >= 4) {
+            let currentChord = randomChord(chordList);
+            let nextChord = randomChord(chordList);
+            nowImg.src = chordImage(currentChord);
+            nextImg.src = chordImage(nextChord);
+
+            loop = function () {
+                if (helpers.isPaused()) {
+                    animationFrameId = requestAnimationFrame(loop);
+                    return;
+                }
+
+                const now = Date.now();
+                const bpm = helpers.getBPM?.() || 40;
+                const halfInterval = 60000 / bpm / 2;
+
+                if (now - previousTick >= halfInterval) {
+                    const index = subTickCount % 8;
+                    const active = exercise.pattern[index] === 1;
+
+                    highlightColumn(index, active);
+
+                    if (active && index % 2 === 0) {
+                        helpers.metronomeTick();
+                    }
+
+                    if (index === 0 && subTickCount !== 0) {
+                        currentChord = nextChord;
+                        let newChord;
+                        do {
+                            newChord = randomChord(chordList);
+                        } while (newChord === currentChord);
+                        nextChord = newChord;
+                        nowImg.src = chordImage(currentChord);
+                        nextImg.src = chordImage(nextChord);
+                    }
+
+                    subTickCount++;
+                    previousTick = now;
+                }
+
+                if (helpers.timer.getRemaining() > 0) {
+                    animationFrameId = requestAnimationFrame(loop);
+                } else {
+                    stopAnimation();
+                }
+            };
+        }
+    }
+
+    if (!loop) {
+        // Fallback loop for 0–1 chord (or None)
+        loop = function () {
+            if (helpers.isPaused()) {
+                animationFrameId = requestAnimationFrame(loop);
+                return;
+            }
+
+            const now = Date.now();
+            const bpm = helpers.getBPM?.() || 40;
+            const halfInterval = 60000 / bpm / 2;
+
+            if (now - previousTick >= halfInterval) {
+                const index = subTickCount % 8;
+                const active = exercise.pattern[index] === 1;
+
+                highlightColumn(index, active);
+
+                if (active && index % 2 === 0) {
+                    helpers.metronomeTick();
+                }
+
+                subTickCount++;
+                previousTick = now;
+            }
+
+            if (helpers.timer.getRemaining() > 0) {
+                animationFrameId = requestAnimationFrame(loop);
+            } else {
+                stopAnimation();
+            }
+        };
+    }
+
+    if (typeof loop === 'function') {
+        animationFrameId = requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('unload', cleanup);
 
     function highlightColumn(index, active) {
         arrowElements.forEach((el, i) => {
@@ -134,45 +275,6 @@ export async function execute(exercise, containerId, helpers) {
         return list[i];
     }
 
-    function loop() {
-        if (helpers.isPaused()) {
-            animationFrameId = requestAnimationFrame(loop);
-            return;
-        }
-
-        const now = Date.now();
-        const bpm = helpers.getBPM?.() || 40;
-        const halfInterval = 60000 / bpm / 2;
-
-        if (now - previousTick >= halfInterval) {
-            const index = subTickCount % 8;
-            const active = exercise.pattern[index] === 1;
-
-            highlightColumn(index, active);
-
-            if (active && index % 2 === 0) {
-                helpers.metronomeTick(); // Only for Down strums with pattern = 1
-            }
-
-            // Chord changes every 4 full BPMs = 8 subticks
-            if (index === 0 && subTickCount !== 0) {
-                currentChord = nextChord;
-                nextChord = randomChord(chordList);
-                nowImg.src = chordImage(currentChord);
-                nextImg.src = chordImage(nextChord);
-            }
-
-            subTickCount++;
-            previousTick = now;
-        }
-
-        if (helpers.timer.getRemaining() > 0) {
-            animationFrameId = requestAnimationFrame(loop);
-        } else {
-            stopAnimation();
-        }
-    }
-
     function stopAnimation() {
         if (animationFrameId) {
             cancelAnimationFrame(animationFrameId);
@@ -188,7 +290,5 @@ export async function execute(exercise, containerId, helpers) {
         window.removeEventListener('unload', cleanup);
     }
 
-    animationFrameId = requestAnimationFrame(loop);
-    window.addEventListener('unload', cleanup);
     return cleanup;
 }
