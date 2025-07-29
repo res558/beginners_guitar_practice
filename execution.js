@@ -3,7 +3,7 @@
  */
 
 import { createTimer } from './timer.js';
-import { getBPM, playTick, setupMetronomeUI } from './metronome.js';
+import { getBPM, setBPM, playTick, setupMetronomeUI } from './metronome.js';
 import { getReady, updateTitle, updateTimerLabel, loadExerciseList, setupThemeToggle } from './helpers.js';
 
 class ExerciseController {
@@ -140,6 +140,7 @@ class ExerciseController {
             const helpers = {
                 metronomeTick: playTick,
                 getBPM,
+                setBPM,
                 timer: this.timer,
                 isPaused: () => this.isPaused
             };
@@ -333,6 +334,21 @@ class ExerciseController {
         if (this.currentCleanup) {
             await this.currentCleanup();
             this.currentCleanup = null;
+        }
+
+        // Additional cleanup for strumming exercise BPM restoration
+        // This ensures BPM is restored even if the exercise cleanup didn't run properly
+        try {
+            const strummingModule = await import('./strumming.js');
+            if (strummingModule.cleanupStrummingBPM) {
+                const helpers = {
+                    getBPM,
+                    setBPM: (value, save) => setBPM(value, save)
+                };
+                strummingModule.cleanupStrummingBPM(helpers);
+            }
+        } catch (e) {
+            // Silently handle if strumming module is not available
         }
 
         if (this.timer) {

@@ -47,6 +47,26 @@
         body {
             display: flex;
             flex-direction: column;
+            height: 100vh; /* Use full viewport height */
+            overflow: hidden; /* Prevent scrolling */
+        }
+
+        /* Sticky Header */
+        .sticky-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: var(--primary-bg);
+            border-bottom: 1px solid var(--section-divider);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            min-height: 60px;
+            flex-shrink: 0; /* Don't shrink */
         }
 
         .theme-toggle {
@@ -59,11 +79,10 @@
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            position: fixed;
-            top: 1%;
-            right: 1%;
+            position: absolute;
+            right: 1rem;
             transition: background 0.2s;
-            z-index: 1000;
+            z-index: 1001;
         }
 
         .theme-toggle:hover {
@@ -84,13 +103,70 @@
         /* Section 1: Page Title Area */
         #pageTitleArea {
             text-align: center;
-            padding: 1rem;
+            padding: 0;
+            margin: 0;
+            flex: 1;
         }
 
         #pageTitleArea h1 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             margin: 0;
             font-weight: 700;
+        }
+
+        /* Collapsible Panel Styles */
+        .panel {
+            position: fixed;
+            top: 60px; /* Below sticky header */
+            left: 0;
+            right: 0;
+            z-index: 999;
+            background: var(--primary-bg);
+            border-bottom: 1px solid var(--section-divider);
+            flex-shrink: 0; /* Don't shrink */
+        }
+
+        .panel-toggle {
+            width: 100%;
+            background: var(--card-bg);
+            color: var(--primary-text);
+            border: none;
+            padding: 1rem;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .panel-toggle:hover {
+            background: var(--border);
+        }
+
+        .panel-toggle .arrow {
+            transition: transform 0.3s ease;
+        }
+
+        .panel-toggle.collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+
+        .panel-content {
+            overflow: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .panel-content.collapsed,
+        #metronomeArea.collapsed {
+            display: none;
+        }
+
+        .panel-content.expanded,
+        #metronomeArea.expanded {
+            display: block;
         }
 
         /* Section 2: Metronome Area */
@@ -99,6 +175,7 @@
             justify-content: space-between;
             gap: 1rem;
             padding: 1rem;
+            margin: 0;
         }
 
         .metronome-left {
@@ -141,6 +218,7 @@
             background: var(--border);
             outline: none;
             -webkit-appearance: none;
+            appearance: none;
         }
 
         /* Chrome, Safari, Opera */
@@ -185,63 +263,175 @@
 
         /* Section 3: Exercise Title Area */
         #titleArea {
+            position: fixed;
+            top: 120px; /* Below header (60px) + metronome toggle (60px) */
+            left: 0;
+            right: 0;
+            z-index: 998;
             text-align: center;
             font-size: 1.5rem;
             padding: 1rem;
+            background: var(--primary-bg);
+            border-bottom: 1px solid var(--section-divider);
+            flex-shrink: 0; /* Don't shrink, only use space needed */
         }
 
-        /* Section 4: Execution Area */
+        /* Section 4: Exercise Carousel */
         #executionArea {
-            flex: 1;
+            position: absolute;
+            height: 65% !important;
+            top: 180px; /* Below header + metronome + title */
+            left: 0;
+            right: 0;
+            bottom: 120px; /* Above timer (40px) + controls (80px) */
             padding: 1rem;
-            min-height: 200px;
+            overflow-y: auto; /* Allow scrolling if content exceeds available space */
+            overflow-x: hidden;
+            /* Take up all remaining space between fixed elements */
+        }
+
+        .exercise-carousel {
+            display: flex;
+            transition: transform 0.3s ease;
+            height: 100%;
+        }
+
+        .exercise-slide {
+            min-width: 100%;
+            flex-shrink: 0;
+            padding: 0 1rem;
+            box-sizing: border-box;
         }
 
         /* Section 5: Timer Area */
         #timerArea {
+            position: fixed;
+            bottom: 50px; /* Above player controls */
+            left: 0;
+            right: 0;
+            z-index: 998;
             text-align: center;
             padding: 0.5rem;
             color: var(--muted-text);
-            font-size: 0.9rem;
+            font-size: 1rem;
+            font-weight: 600;
+            background: var(--primary-bg);
+            border-top: 1px solid var(--section-divider);
+            flex-shrink: 0; /* Don't shrink, only use space needed */
         }
 
         /* Section 6: Player Controls Area */
         #playerControlsArea {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
             display: flex;
             justify-content: space-between;
+            align-items: center;
             gap: 1rem;
             padding: 1rem;
+            background: var(--card-bg);
+            border-top: 1px solid var(--section-divider);
         }
 
         .controls-center {
             display: flex;
             justify-content: center;
             gap: 1rem;
+            flex: 1;
         }
 
         .control-button {
             background: var(--button-bg);
             color: var(--button-text);
             border: none;
-            border-radius: 4px;
-            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            padding: 0.75rem 1.25rem;
             cursor: pointer;
             min-width: 80px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
         }
 
         .control-button:hover {
             opacity: 0.9;
+            transform: translateY(-1px);
         }
 
         .control-button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             background: var(--border);
+            transform: none;
         }
 
-        @media (max-width: 600px) {
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                height: 100vh; /* Maintain full viewport height on mobile */
+                overflow: hidden; /* Prevent scrolling on mobile */
+            }
+
+            .sticky-header {
+                min-height: 50px;
+                padding: 0.25rem 1rem;
+                flex-shrink: 0;
+            }
+
+            .panel {
+                top: 50px; /* Below smaller mobile header */
+            }
+
+            #titleArea {
+                top: 110px; /* Adjusted for mobile header + metronome toggle */
+                font-size: 1.2rem;
+                padding: 0.75rem;
+            }
+
+            #executionArea {
+                top: 160px; /* Adjusted for mobile layout */
+                bottom: 100px; /* Above timer + controls on mobile */
+                padding: 0.75rem;
+                overflow-y: hidden; /* Ensure scrolling on mobile if needed */
+            }
+
+            #timerArea {
+                bottom: 50px; /* Above mobile controls */
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+
+            #pageTitleArea h1 {
+                font-size: 1.4rem;
+            }
+
+            .theme-toggle {
+                width: 35px;
+                height: 35px;
+            }
+
+            .theme-toggle img {
+                width: 20px;
+                height: 20px;
+            }
+
+            /* Metronome panel collapsed by default on mobile */
+            .panel-content.collapsed,
+            #metronomeArea.collapsed {
+                display: none;
+            }
+
+            .panel-content.expanded,
+            #metronomeArea.expanded {
+                display: block;
+            }
+
             #metronomeArea {
                 flex-direction: column;
+                padding: 0.75rem;
             }
 
             .metronome-left,
@@ -249,52 +439,106 @@
                 flex: 0 0 100%;
             }
 
+            /* Floating sticky footer on mobile */
+            #playerControlsArea {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                padding: 0.75rem;
+                box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                justify-content: center; /* Center controls on mobile */
+            }
+
+            /* Hide spacer on mobile */
+            #playerControlsArea > div:last-child {
+                display: none;
+            }
+
             .control-button {
                 min-width: 60px;
                 font-size: 0.9rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sticky-header {
+                padding: 0.25rem 0.5rem;
+            }
+
+            #pageTitleArea h1 {
+                font-size: 1.2rem;
+            }
+
+            .control-button {
+                min-width: 50px;
+                font-size: 0.8rem;
+                padding: 0.5rem 0.75rem;
+            }
+
+            .controls-center {
+                gap: 0.5rem;
+            }
+
+            #playerControlsArea {
+                padding: 0.5rem;
             }
         }
     </style>
 </head>
 
 <body>
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode">
-        <img id="themeIcon" src="moon.svg" alt="Toggle theme">
-    </button>
-
-    <!-- Section 1: Page Title Area -->
-    <div id="pageTitleArea" class="section">
-        <h1>Practice Mode</h1>
+    <!-- Sticky Header -->
+    <div class="sticky-header">
+        <div id="pageTitleArea">
+            <h1>Practice Mode</h1>
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode">
+            <img id="themeIcon" src="moon.svg" alt="Toggle theme">
+        </button>
     </div>
 
-    <!-- Section 2: Metronome Area -->
-    <div id="metronomeArea" class="section">
-        <div class="metronome-left">
-            <div class="bpm-controls">
-                <button class="bpm-button" id="decreaseBpm">-</button>
-                <span id="bpmDisplay">Metronome: 40 BPM</span>
-                <button class="bpm-button" id="increaseBpm">+</button>
+    <!-- Collapsible Metronome Panel -->
+    <div class="panel">
+        <button class="panel-toggle" id="metronomeToggle">
+            Metronome
+            <span class="arrow">▼</span>
+        </button>
+        <div id="metronomeArea" class="panel-content">
+            <div class="metronome-left">
+                <div class="bpm-controls">
+                    <button class="bpm-button" id="decreaseBpm">-</button>
+                    <span id="bpmDisplay">Metronome: 40 BPM</span>
+                    <button class="bpm-button" id="increaseBpm">+</button>
+                </div>
+                <div class="slider-container">
+                    <input type="range" id="bpmSlider" min="10" max="200" value="40">
+                </div>
             </div>
-            <div class="slider-container">
-                <input type="range" id="bpmSlider" min="10" max="200" value="40">
+            <div class="metronome-right">
+                <div>Sound</div>
+                <button class="sound-toggle" id="soundToggle">Off ✖️</button>
             </div>
-        </div>
-        <div class="metronome-right">
-            <div>Sound</div>
-            <button class="sound-toggle" id="soundToggle">Off ✖️</button>
         </div>
     </div>
 
-    <!-- Section 3: Exercise Title Area -->
+    <!-- Exercise Title Area -->
     <div id="titleArea" class="section"></div>
 
-    <!-- Section 4: Execution Area -->
-    <div id="executionArea" class="section"></div>
+    <!-- Exercise Carousel Area -->
+    <div id="executionArea" class="section">
+        <!-- Dynamic content will be inserted here by execution.js -->
+        <!-- The carousel structure will be managed by JavaScript when needed -->
+    </div>
 
-    <!-- Section 5: Timer Area -->
+    <!-- Timer Area -->
     <div id="timerArea" class="section">0:00</div>
 
-    <!-- Section 6: Player Controls Area -->
+    <!-- Player Controls Area -->
     <div id="playerControlsArea" class="section">
         <button class="control-button" onclick="goBack()">Back</button>
         <div class="controls-center">
@@ -307,6 +551,152 @@
 
     <script type="module" src="execution.js"></script>
     <script>
+        // Initialize collapsible metronome panel
+        document.addEventListener('DOMContentLoaded', function() {
+            const metronomeToggle = document.getElementById('metronomeToggle');
+            const metronomeArea = document.getElementById('metronomeArea');
+            const titleArea = document.getElementById('titleArea');
+            const executionArea = document.getElementById('executionArea');
+            const timerArea = document.getElementById('timerArea');
+            const playerControlsArea = document.getElementById('playerControlsArea');
+            const stickyHeader = document.querySelector('.sticky-header');
+            const panel = document.querySelector('.panel');
+            const arrow = metronomeToggle.querySelector('.arrow');
+            
+            // Function to calculate and update all positions based on actual element heights
+            function updateLayout() {
+                const isMobile = window.innerWidth <= 768;
+                
+                // Get actual heights of fixed elements
+                const headerHeight = stickyHeader.offsetHeight;
+                const toggleHeight = metronomeToggle.offsetHeight;
+                const metronomeHeight = metronomeArea.classList.contains('expanded') ? 
+                    metronomeArea.offsetHeight : 0;
+                const titleHeight = titleArea.offsetHeight || (isMobile ? 50 : 60);
+                const timerHeight = timerArea.offsetHeight || (isMobile ? 40 : 50);
+                const controlsHeight = playerControlsArea.offsetHeight;
+                
+                // Calculate positions
+                const panelTop = headerHeight;
+                const titleTop = headerHeight + toggleHeight + metronomeHeight;
+                const executionTop = titleTop + titleHeight;
+                const timerBottom = controlsHeight;
+                const executionBottom = timerHeight + controlsHeight;
+                
+                // Update positions
+                panel.style.top = panelTop + 'px';
+                titleArea.style.top = titleTop + 'px';
+                executionArea.style.top = executionTop + 'px';
+                executionArea.style.bottom = executionBottom + 'px';
+                timerArea.style.bottom = timerBottom + 'px';
+                
+                // Ensure minimum height for execution area
+                const availableHeight = window.innerHeight - executionTop - executionBottom;
+                if (availableHeight < 100) {
+                    // If space is too tight, force minimum heights
+                    executionArea.style.height = '100px';
+                    executionArea.style.bottom = 'auto';
+                }
+            }
+            
+            // Function to measure element heights after render
+            function measureAndUpdate() {
+                // Force a layout recalculation
+                metronomeArea.offsetHeight;
+                titleArea.offsetHeight;
+                
+                // Update layout with measured values
+                requestAnimationFrame(updateLayout);
+            }
+            
+            // Set initial state based on screen size
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                metronomeArea.classList.add('collapsed');
+                metronomeToggle.classList.add('collapsed');
+            } else {
+                metronomeArea.classList.add('expanded');
+            }
+            
+            // Initial layout update
+            measureAndUpdate();
+            
+            // Toggle functionality
+            metronomeToggle.addEventListener('click', function() {
+                const isCollapsed = metronomeArea.classList.contains('collapsed');
+                
+                if (isCollapsed) {
+                    metronomeArea.classList.remove('collapsed');
+                    metronomeArea.classList.add('expanded');
+                    metronomeToggle.classList.remove('collapsed');
+                } else {
+                    metronomeArea.classList.remove('expanded');
+                    metronomeArea.classList.add('collapsed');
+                    metronomeToggle.classList.add('collapsed');
+                }
+                
+                // Update layout after animation completes
+                setTimeout(measureAndUpdate, 100);
+            });
+            
+            // Handle window resize
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    const isMobile = window.innerWidth <= 768;
+                    
+                    // Auto-collapse on mobile, auto-expand on desktop if no explicit state
+                    if (isMobile && !metronomeArea.classList.contains('collapsed') && !metronomeArea.classList.contains('expanded')) {
+                        metronomeArea.classList.add('collapsed');
+                        metronomeToggle.classList.add('collapsed');
+                    } else if (!isMobile && !metronomeArea.classList.contains('expanded') && !metronomeArea.classList.contains('collapsed')) {
+                        metronomeArea.classList.add('expanded');
+                        metronomeToggle.classList.remove('collapsed');
+                    }
+                    
+                    measureAndUpdate();
+                }, 100);
+            });
+            
+            // Handle theme changes that might affect element heights
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    setTimeout(measureAndUpdate, 50);
+                });
+            }
+            
+            // Observe DOM changes that might affect layout
+            const observer = new ResizeObserver(function(entries) {
+                measureAndUpdate();
+            });
+            
+            // Observe key elements for size changes
+            observer.observe(stickyHeader);
+            observer.observe(metronomeArea);
+            observer.observe(titleArea);
+            observer.observe(timerArea);
+            observer.observe(playerControlsArea);
+            
+            // Cleanup BPM on page unload (safety net)
+            window.addEventListener('beforeunload', async function() {
+                try {
+                    const strummingModule = await import('./strumming.js');
+                    const metronomeModule = await import('./metronome.js');
+                    if (strummingModule.cleanupStrummingBPM && metronomeModule.getBPM && metronomeModule.setBPM) {
+                        const helpers = {
+                            getBPM: metronomeModule.getBPM,
+                            setBPM: metronomeModule.setBPM
+                        };
+                        strummingModule.cleanupStrummingBPM(helpers);
+                    }
+                } catch (e) {
+                    // Silently handle if modules are not available
+                }
+            });
+        });
+
         async function goBack() {
             // Get the controller instance from the module
             const controller = await import('./execution.js');
@@ -317,7 +707,23 @@
                     instance.pause();
                 }
             }
-            // Navigate back to index.html
+            
+            // Additional cleanup for strumming BPM before navigating away
+            try {
+                const strummingModule = await import('./strumming.js');
+                const metronomeModule = await import('./metronome.js');
+                if (strummingModule.cleanupStrummingBPM && metronomeModule.getBPM && metronomeModule.setBPM) {
+                    const helpers = {
+                        getBPM: metronomeModule.getBPM,
+                        setBPM: metronomeModule.setBPM
+                    };
+                    strummingModule.cleanupStrummingBPM(helpers);
+                }
+            } catch (e) {
+                // Silently handle if modules are not available
+            }
+            
+            // Navigate back to index.html (updated to match the main interface)
             window.location.href = 'index.html';
         }
     </script>
