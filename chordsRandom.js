@@ -4,7 +4,6 @@
 
 // Animation state
 let animationFrameId = null;
-let hasPositionedHighlight = false;
 
 /**
  * Create a wrapper div with theme-aware background styling for chord images
@@ -13,14 +12,14 @@ let hasPositionedHighlight = false;
 function createChordWrapper() {
     const wrapper = document.createElement('div');
     wrapper.className = 'chord-image-wrapper';
-    //wrapper.style.padding = '12px';
     wrapper.style.borderRadius = '12px';
-    wrapper.style.display = 'flex';
+    wrapper.style.display = 'inline-flex'; // Size to content, not container
     wrapper.style.justifyContent = 'center';
     wrapper.style.alignItems = 'center';
-    wrapper.style.height = '100%';
-    //wrapper.style.backdropFilter = 'blur(3px)';
-    //wrapper.style.WebkitBackdropFilter = 'blur(3px)';
+    wrapper.style.backdropFilter = 'blur(3px)';
+    wrapper.style.WebkitBackdropFilter = 'blur(3px)';
+    wrapper.style.maxHeight = '100%'; // Respect container height limit
+    wrapper.style.maxWidth = '100%'; // Respect container width limit
 
     const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
     if (isDarkMode) {
@@ -33,11 +32,12 @@ function createChordWrapper() {
 }
 
 /**
- * Create an image element for a chord
+ * Create an image element for a chord with proper load handling
  * @param {string} chord - The chord name (e.g., "Am")
+ * @param {Function} onLoadCallback - Callback to execute when image loads
  * @returns {HTMLDivElement} The wrapper containing the image
  */
-function createChordImage(chord) {
+function createChordImage(chord, onLoadCallback) {
     const wrapper = createChordWrapper();
 
     const img = document.createElement('img');
@@ -46,6 +46,26 @@ function createChordImage(chord) {
     img.style.maxWidth = '100%';
     img.style.maxHeight = '100%';
     img.style.objectFit = 'contain';
+    img.style.display = 'block';
+
+    // Handle image load for positioning
+    const handleImageLoad = () => {
+        if (onLoadCallback && typeof onLoadCallback === 'function') {
+            // Use requestAnimationFrame to ensure layout is complete
+            requestAnimationFrame(() => {
+                onLoadCallback(wrapper);
+            });
+        }
+    };
+
+    if (img.complete) {
+        // Image is already loaded (cached)
+        handleImageLoad();
+    } else {
+        // Wait for image to load
+        img.onload = handleImageLoad;
+        img.onerror = handleImageLoad; // Still position even if image fails
+    }
 
     wrapper.appendChild(img);
     return wrapper;
@@ -116,9 +136,48 @@ export async function execute(exercise, containerId, helpers) {
     let nextChord = getRandomChord(exercise.chordsTo, currentChord);
     let previousTick = Date.now();
 
+    /**
+     * Position the highlight frame around the left image wrapper
+     */
+    function positionHighlight() {
+        const targetImage = leftContainer.querySelector('.chord-image-wrapper');
+        if (targetImage) {
+            const rect = targetImage.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            highlightFrame.style.width = `${rect.width}px`;
+            highlightFrame.style.height = `${rect.height}px`;
+            highlightFrame.style.left = `${rect.left - containerRect.left}px`;
+            highlightFrame.style.top = `${rect.top - containerRect.top}px`;
+            highlightFrame.style.transform = 'none';
+            highlightFrame.style.display = 'block';
+        }
+    }
+
+    /**
+     * Handle window resize and orientation changes
+     */
+    function handleResize() {
+        // Re-position highlight after layout changes
+        setTimeout(() => {
+            positionHighlight();
+        }, 100);
+    }
+
+    /**
+     * Handle image load and position highlight
+     */
+    function handleImageLoad(wrapper) {
+        // Only position highlight for the left image
+        if (leftContainer.contains(wrapper)) {
+            positionHighlight();
+        }
+    }
+
     function updateDisplay(animate = false) {
-        const leftImage = createChordImage(currentChord);
-        const rightImage = createChordImage(nextChord);
+        // Create images with load callbacks
+        const leftImage = createChordImage(currentChord, handleImageLoad);
+        const rightImage = createChordImage(nextChord); // No callback for right image
 
         if (animate) {
             leftContainer.style.transition = 'transform 0.2s ease-out';
@@ -136,7 +195,7 @@ export async function execute(exercise, containerId, helpers) {
                 rightContainer.style.transform = '';
                 leftContainer.innerHTML = '';
                 rightContainer.innerHTML = '';
-                leftContainer.appendChild(createChordImage(currentChord));
+                leftContainer.appendChild(createChordImage(currentChord, handleImageLoad));
                 rightContainer.appendChild(createChordImage(nextChord));
             }, 200);
         } else {
@@ -144,31 +203,12 @@ export async function execute(exercise, containerId, helpers) {
             rightContainer.innerHTML = '';
             leftContainer.appendChild(leftImage);
             rightContainer.appendChild(rightImage);
-
-            if (!hasPositionedHighlight) {
-                setTimeout(() => {
-                    requestAnimationFrame(() => {
-                        const targetImage = leftContainer.querySelector('.chord-image-wrapper');
-                        if (targetImage) {
-                            void targetImage.offsetHeight;
-
-                            const rect = targetImage.getBoundingClientRect();
-                            const containerRect = container.getBoundingClientRect();
-
-                            highlightFrame.style.width = `${rect.width}px`;
-                            highlightFrame.style.height = `${rect.height}px`;
-                            highlightFrame.style.left = `${rect.left - containerRect.left}px`;
-                            highlightFrame.style.top = `${rect.top - containerRect.top}px`;
-                            highlightFrame.style.transform = 'none';
-                            highlightFrame.style.display = 'block';
-
-                            hasPositionedHighlight = true;
-                        }
-                    });
-                }, 0);
-            }
         }
     }
+
+    // Add resize listeners
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
 
     updateDisplay();
 
@@ -237,12 +277,22 @@ export async function execute(exercise, containerId, helpers) {
     window.addEventListener('unload', () => {
         observer.disconnect();
         stopAnimation();
+        
+        // Remove resize listeners
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('orientationchange', handleResize);
+        
         container.innerHTML = '';
     });
 
     return () => {
         observer.disconnect();
         stopAnimation();
+        
+        // Remove resize listeners
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('orientationchange', handleResize);
+        
         container.innerHTML = '';
     };
 }
