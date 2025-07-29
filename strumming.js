@@ -105,7 +105,7 @@ export async function execute(exercise, containerId, helpers) {
     let subTickCount = 0;
     let previousTick = Date.now();
 
-    let chordList = exercise.chordsTo || [];
+    let chordList = exercise.chords || [];
     let onlyNone = chordList.length === 1 && chordList[0] === 'None';
 
     if (onlyNone) {
@@ -267,6 +267,7 @@ export async function execute(exercise, containerId, helpers) {
     }
 
     function chordImage(name) {
+        console.log(`Loading chord image for: |${name}|`);
         return `chords/${name}.png`;
     }
 

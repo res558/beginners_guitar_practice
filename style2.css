@@ -1,0 +1,491 @@
+:root {
+    --primary-bg: #f9f9f9;
+    --primary-text: #222;
+    --accent: #4f8cff;
+    --card-bg: #fff;
+    --border: #e0e0e0;
+    --button-bg: #4f8cff;
+    --button-text: #fff;
+    --hover-bg: #3a7aff;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --remove-bg: #ff4f4f;
+    --remove-text: #fff;
+}
+
+[data-theme="dark"] {
+    --primary-bg: #181a1b;
+    --primary-text: #f1f1f1;
+    --accent: #7ab7ff;
+    --card-bg: #23272a;
+    --border: #333;
+    --button-bg: #7ab7ff;
+    --button-text: #181a1b;
+    --hover-bg: #5a9fff;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --remove-bg: #ff6b6b;
+    --remove-text: #fff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--primary-bg);
+    color: var(--primary-text);
+    line-height: 1.6;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2rem;
+    padding-bottom: 100px; /* Space for floating button */
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Theme Toggle */
+.theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: var(--border);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+    z-index: 1000;
+}
+
+.theme-toggle:hover {
+    background: var(--accent);
+}
+
+.theme-toggle img {
+    width: 24px;
+    height: 24px;
+}
+
+/* Exercise Configuration Area */
+.exercise-config {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.exercise-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.exercise-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px var(--shadow);
+}
+
+h2 {
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    color: var(--primary-text);
+}
+
+/* Form Elements */
+select, input[type="number"] {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--primary-text);
+}
+
+select[multiple] {
+    height: 120px;
+}
+
+.duration-select {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0;
+}
+
+.duration-select input {
+    width: 80px;
+}
+
+/* Updated Duration Container Styles */
+.duration-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+.duration-label {
+    flex-shrink: 0;
+    font-size: 0.9em;
+    color: var(--primary-text);
+    font-weight: 500;
+}
+
+.duration-input {
+    width: 80px;
+    font-size: 0.95em;
+    padding: 4px 6px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    color: var(--primary-text);
+    transition: border-color 0.2s ease;
+}
+
+.duration-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+/* Strumming Pattern */
+.strum-pattern-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 2px;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+}
+
+.toggle-strum {
+    font-size: 1.1em;
+    line-height: 1.1em;
+    text-align: center;
+    padding: 12px 8px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    background-color: var(--card-bg);
+    color: var(--primary-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+    min-width: 30px;
+    font-weight: 600;
+}
+
+.toggle-strum:hover {
+    border-color: var(--accent);
+    transform: scale(1.05);
+}
+
+.toggle-strum.active {
+    background-color: var(--accent);
+    color: var(--button-text);
+    border-color: var(--accent);
+    transform: scale(1.1);
+}
+
+.toggle-strum.active:hover {
+    background-color: var(--hover-bg);
+}
+
+/* Buttons */
+.add-button, .start-button {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 6px;
+    background: var(--button-bg);
+    color: var(--button-text);
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+    margin-top: 1em;
+}
+
+.add-button:hover, .start-button:hover {
+    background: var(--hover-bg);
+}
+
+/* Queue Bubble */
+.queue-bubble {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 60px;
+    height: 60px;
+    background: var(--accent);
+    color: var(--button-text);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 12px var(--shadow);
+    transition: transform 0.3s, box-shadow 0.3s;
+    z-index: 998;
+    animation: pulse 2s infinite;
+}
+
+.queue-bubble:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px var(--shadow);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px var(--shadow);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px var(--shadow);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px var(--shadow);
+    }
+}
+
+/* Queue Modal */
+.queue-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.queue-modal.hidden {
+    display: none;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    position: relative;
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 24px var(--shadow);
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--primary-text);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.close-btn:hover {
+    opacity: 1;
+}
+
+/* Floating Open Practice Button */
+.floating-practice-btn {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: var(--button-text);
+    border: none;
+    border-radius: 8px;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+    z-index: 997;
+}
+
+.floating-practice-btn:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 6px 16px var(--shadow);
+}
+
+.floating-practice-btn.hidden {
+    display: none;
+}
+
+/* Queue List Styles */
+.queue-list {
+    margin: 1rem 0;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.queue-list {
+    margin-bottom: 1rem;
+    min-height: 200px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.queue-item {
+    background: var(--primary-bg);
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideIn 0.3s ease-out;
+    transition: all 0.3s ease;
+}
+
+.queue-item:hover {
+    transform: translateX(4px);
+}
+
+.exercise-text {
+    flex: 1;
+    padding-right: 12px;
+}
+
+.remove-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--remove-bg);
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.remove-btn:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+}
+
+/* Responsive Remove Button Text */
+@media (max-width: 600px) {
+    .remove-btn::before {
+        content: "🗑️";
+        font-size: 1.2em;
+    }
+}
+
+@media (min-width: 601px) {
+    .remove-btn::before {
+        content: "Remove";
+    }
+}
+
+/* Animation for removing items */
+.queue-item.removing {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+
+    .queue-panel {
+        position: static;
+        margin-top: 2rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .exercise-config {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: 1rem;
+    }
+
+    .strum-pattern-grid {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 2px;
+    }
+
+    .toggle-strum {
+        font-size: 1.0em;
+        padding: 8px 4px;
+        min-width: 30px;
+    }
+
+    /* Responsive Duration Container */
+    .duration-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .duration-label {
+        margin-bottom: 4px;
+    }
+}
+
+input.duration-input {
+  margin-bottom: 0;
+}
