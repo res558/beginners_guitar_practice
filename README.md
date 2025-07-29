@@ -9,13 +9,16 @@ This application was created as a personal practice aid and is now available to 
 - Chord change practice
 - Strumming pattern exercises
 
+![Overview of the preparation page on mobile](project_images/mobile-preparation.png)
+
+
 ## Features
 
 ### 1. Spider Walk Practice
 ![Selection and setup of Spider Walk exercise](project_images/spider_config.png)
 ![Execution of a Spider Walk exercise](project_images/spider_exec.png)
 
-- Multiple walking patterns available
+- Multiple spider walk patterns available
 - Helps develop:
   - Finger dexterity
   - Finger independence
@@ -53,7 +56,7 @@ Available in two modes:
 ## Features Common to All Exercises
 
 - Configurable duration for each exercise
-- Built-in metronome with adjustable speed
+- Built-in simple metronome with adjustable speed
 - Optional metronome sound
 - Visual beat indicators
 - Multiple exercise configurations can be queued
@@ -64,8 +67,13 @@ Available in two modes:
 1. Choose your exercise type (Spider Walk, Chord Changes, or Strumming)
 2. Configure your exercise parameters
 3. Set your preferred duration
-4. Adjust metronome speed as needed
-5. Start practicing!
+4. Add yout exercise to the queue
+5. Click on "Open Practice" to switch to practice mode
+6. Adjust metronome speed as needed
+7. Click on the play button to start the queue of exercises
+8. Use Pause, Previous or Next buttons to control the exercises
+9. Use the Back button to go back to the queue preparation
+10. Start practicing!
 
 You can add multiple exercises to your practice queue, each with its own unique configuration.
 
