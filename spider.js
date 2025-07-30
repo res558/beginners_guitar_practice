@@ -84,14 +84,14 @@ export async function execute(exercise, containerId, helpers) {
         container.innerHTML = '';
         
         // Create exercise title (optional, can be commented out)
-        const titleElement = document.createElement('div');
-        titleElement.style.textAlign = 'center';
-        titleElement.style.marginBottom = '20px';
-        titleElement.style.fontSize = '1.2em';
-        titleElement.style.fontWeight = 'bold';
-        titleElement.style.color = 'var(--primary-text)';
-        titleElement.textContent = `Spider Walk - ${exercise.name}`;
-        container.appendChild(titleElement);
+        //const titleElement = document.createElement('div');
+        //titleElement.style.textAlign = 'center';
+        //titleElement.style.marginBottom = '20px';
+        //titleElement.style.fontSize = '1.2em';
+        //titleElement.style.fontWeight = 'bold';
+        //titleElement.style.color = 'var(--primary-text)';
+        //titleElement.textContent = `Spider Walk - ${exercise.name}`;
+        //container.appendChild(titleElement);
         
         // Create SVG element
         svg = document.createElementNS(SVG_NS, 'svg');
