@@ -211,7 +211,7 @@ class ExerciseController {
                 transform: 'translate(-50%, -50%)',
                 fontSize: '2rem',
                 zIndex: 10000,
-                animation: 'blink-out 0.5s forwards',
+                animation: 'blink-out 2s forwards',
                 pointerEvents: 'none',
             });
             document.body.appendChild(emoji);
