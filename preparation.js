@@ -172,6 +172,24 @@ function updateQueueCount() {
     }
 }
 
+// Update the queue modal title with total duration
+function updateQueueTitle() {
+    const queueModalTitle = document.querySelector('#queueModal h2');
+    if (!queueModalTitle) return;
+    
+    // Calculate total duration
+    const totalMinutes = exerciseList.reduce((total, exercise) => {
+        return total + parseInt(exercise.duration);
+    }, 0);
+    
+    // Update title text
+    if (totalMinutes > 0) {
+        queueModalTitle.textContent = `Practice Queue (Total: ${totalMinutes} minutes)`;
+    } else {
+        queueModalTitle.textContent = 'Practice Queue';
+    }
+}
+
 // Setup strumming pattern toggle buttons
 function setupStrummingToggles() {
     const toggleButtons = document.querySelectorAll('.toggle-strum');
@@ -345,6 +363,7 @@ function renderQueue() {
     const queueList = document.getElementById('queueList');
     queueList.innerHTML = '';
     updateQueueCount(); // Update the bubble count
+    updateQueueTitle(); // Update the modal title with total duration
 
     exerciseList.forEach((exercise, index) => {
         const item = document.createElement('div');
