@@ -107,7 +107,7 @@ export async function execute(exercise, containerId, helpers) {
     directions.forEach((arrow) => {
         const arrowEl = document.createElement('div');
         arrowEl.textContent = arrow;
-        arrowEl.style.fontSize = '4em';
+        arrowEl.style.fontSize = '3.5em';
         arrowEl.style.transition = 'all 0.2s ease';
         arrowEl.style.padding = '10px';
         arrowEl.style.borderRadius = '8px';
@@ -119,7 +119,7 @@ export async function execute(exercise, containerId, helpers) {
     beatLabels.forEach((label) => {
         const beatEl = document.createElement('div');
         beatEl.textContent = label;
-        beatEl.style.fontSize = '2.5em';
+        beatEl.style.fontSize = '1.5em';
         patternDiv.appendChild(beatEl);
     });
 
@@ -127,10 +127,10 @@ export async function execute(exercise, containerId, helpers) {
     nowLabel.textContent = 'Now';
 
     const nowWrapper = document.createElement('div');
-    nowWrapper.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+    nowWrapper.style.backgroundColor = 'rgba(122, 183, 255, 0.5)';
     nowWrapper.style.borderRadius = '12px';
     nowWrapper.style.padding = '10px';
-    nowWrapper.style.boxShadow = '0 0 8px rgba(255, 255, 255, 0.2)';
+    nowWrapper.style.boxShadow = '0 0 8px rgba(122, 183, 255, 0.5)';
     nowWrapper.style.backdropFilter = 'blur(2px)';
     nowWrapper.style.display = 'flex';
     nowWrapper.style.justifyContent = 'center';
@@ -143,10 +143,10 @@ export async function execute(exercise, containerId, helpers) {
     nextLabel.textContent = 'Next';
 
     const nextWrapper = document.createElement('div');
-    nextWrapper.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+    nextWrapper.style.backgroundColor = 'rgba(122, 183, 255, 0.5)';
     nextWrapper.style.borderRadius = '12px';
     nextWrapper.style.padding = '10px';
-    nextWrapper.style.boxShadow = '0 0 8px rgba(255, 255, 255, 0.2)';
+    nextWrapper.style.boxShadow = '0 0 8px rgba(122, 183, 255, 0.5)';
     nextWrapper.style.backdropFilter = 'blur(2px)';
     nextWrapper.style.display = 'flex';
     nextWrapper.style.justifyContent = 'center';
@@ -180,7 +180,7 @@ export async function execute(exercise, containerId, helpers) {
         chordsDiv.appendChild(nextGroup);
         
         // Adjust image sizes for mobile
-        nowImg.style.width = '50px';
+        nowImg.style.width = '80px';
         nextImg.style.width = '80px';
     } else {
         // Desktop: vertical layout (original)
