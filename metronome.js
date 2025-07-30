@@ -11,11 +11,15 @@ let currentBpm = 40;
 let isSoundEnabled = false;
 
 // UI Elements
-let bpmSlider = null;
+let bpmInput = null;
 let bpmDisplay = null;
 let decreaseButton = null;
 let increaseButton = null;
 let soundToggle = null;
+
+// Hold-to-repeat state
+let holdInterval = null;
+let holdTimeout = null;
 
 /**
  * Load and decode the tick sound buffer
@@ -77,9 +81,8 @@ export function setBPM(value, saveSettings = true) {
     currentBpm = Math.min(200, Math.max(10, value));
     
     // Update UI if initialized
-    if (bpmSlider && bpmDisplay) {
-        bpmSlider.value = currentBpm;
-        bpmDisplay.textContent = `Metronome: ${currentBpm} BPM`;
+    if (bpmInput) {
+        bpmInput.value = currentBpm;
     }
 
     // Save settings if requested
@@ -96,7 +99,7 @@ export function setBPM(value, saveSettings = true) {
 function setSoundEnabled(enabled, saveSettings = true) {
     isSoundEnabled = enabled;
     if (soundToggle) {
-        soundToggle.textContent = enabled ? 'On ✔️' : 'Off ✖️';
+        soundToggle.textContent = enabled ? 'Sound On ✔️' : 'Sound Off ✖️';
     }
     
     // Save settings if requested
@@ -118,17 +121,47 @@ export function playTick() {
 }
 
 /**
+ * Helper function to start hold-to-repeat functionality
+ * @param {function} action - Function to execute repeatedly
+ */
+function startHoldToRepeat(action) {
+    // Clear any existing intervals
+    clearHoldToRepeat();
+    
+    // Execute immediately
+    action();
+    
+    // Start with a delay, then repeat faster
+    holdTimeout = setTimeout(() => {
+        holdInterval = setInterval(action, 150); // Repeat every 150ms
+    }, 300); // Initial delay of 300ms
+}
+
+/**
+ * Helper function to stop hold-to-repeat functionality
+ */
+function clearHoldToRepeat() {
+    if (holdInterval) {
+        clearInterval(holdInterval);
+        holdInterval = null;
+    }
+    if (holdTimeout) {
+        clearTimeout(holdTimeout);
+        holdTimeout = null;
+    }
+}
+
+/**
  * Initialize metronome UI and attach event listeners
  */
 export function setupMetronomeUI() {
     // Get UI elements
-    bpmSlider = document.getElementById('bpmSlider');
-    bpmDisplay = document.getElementById('bpmDisplay');
+    bpmInput = document.getElementById('bpmInput');
     decreaseButton = document.getElementById('decreaseBpm');
     increaseButton = document.getElementById('increaseBpm');
     soundToggle = document.getElementById('soundToggle');
 
-    if (!bpmSlider || !bpmDisplay || !decreaseButton || !increaseButton || !soundToggle) {
+    if (!bpmInput || !decreaseButton || !increaseButton || !soundToggle) {
         console.error('Required metronome UI elements not found');
         return;
     }
@@ -141,7 +174,7 @@ export function setupMetronomeUI() {
         setSoundEnabled(savedSettings.soundOn, false);
     } else {
         // Initialize with default values
-        setBPM(parseInt(bpmSlider.value), false);
+        setBPM(parseInt(bpmInput.value), false);
         setSoundEnabled(false, false);
     }
 
@@ -155,23 +188,79 @@ export function setupMetronomeUI() {
         }
     }, { once: true });
 
-    // Slider change handler
-    bpmSlider.addEventListener('input', (e) => {
-        setBPM(parseInt(e.target.value), true);
-        // Play a tick on change if sound is enabled
-        //playTick();
+    // BPM input change handler
+    bpmInput.addEventListener('input', (e) => {
+        const value = parseInt(e.target.value);
+        if (!isNaN(value)) {
+            setBPM(value, true);
+        }
     });
 
-    // Decrease button handler
-    decreaseButton.addEventListener('click', () => {
-        setBPM(currentBpm - 1, true);
-        //playTick();
+    // BPM input validation on blur
+    bpmInput.addEventListener('blur', (e) => {
+        const value = parseInt(e.target.value);
+        if (isNaN(value) || value < 10 || value > 200) {
+            // Reset to current valid value if invalid input
+            setBPM(currentBpm, false);
+        }
     });
 
-    // Increase button handler
-    increaseButton.addEventListener('click', () => {
-        setBPM(currentBpm + 1, true);
-        //playTick();
+    // Decrease button handlers with hold-to-repeat
+    decreaseButton.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        startHoldToRepeat(() => {
+            setBPM(currentBpm - 1, true);
+        });
+    });
+
+    decreaseButton.addEventListener('mouseup', clearHoldToRepeat);
+    decreaseButton.addEventListener('mouseleave', clearHoldToRepeat);
+
+    // Touch events for mobile
+    decreaseButton.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startHoldToRepeat(() => {
+            setBPM(currentBpm - 1, true);
+        });
+    });
+
+    decreaseButton.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        clearHoldToRepeat();
+    });
+
+    decreaseButton.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        clearHoldToRepeat();
+    });
+
+    // Increase button handlers with hold-to-repeat
+    increaseButton.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        startHoldToRepeat(() => {
+            setBPM(currentBpm + 1, true);
+        });
+    });
+
+    increaseButton.addEventListener('mouseup', clearHoldToRepeat);
+    increaseButton.addEventListener('mouseleave', clearHoldToRepeat);
+
+    // Touch events for mobile
+    increaseButton.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startHoldToRepeat(() => {
+            setBPM(currentBpm + 1, true);
+        });
+    });
+
+    increaseButton.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        clearHoldToRepeat();
+    });
+
+    increaseButton.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        clearHoldToRepeat();
     });
 
     // Sound toggle handler
@@ -183,12 +272,17 @@ export function setupMetronomeUI() {
             playTick();
         }
     });
+
+    // Cleanup hold-to-repeat on window blur/focus loss
+    window.addEventListener('blur', clearHoldToRepeat);
+    window.addEventListener('beforeunload', clearHoldToRepeat);
 }
 
 /**
  * Clean up metronome resources
  */
 export function cleanup() {
+    clearHoldToRepeat();
     if (context) {
         context.close();
     }
