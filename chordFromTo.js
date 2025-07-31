@@ -133,7 +133,10 @@ export async function execute(exercise, containerId, helpers) {
     highlightFrame.style.boxSizing = 'border-box';
     container.appendChild(highlightFrame);
 
-    const chordsList = generateChordList(exercise.chordFrom, exercise.chordsTo);
+    // Clean chordsTo array by removing any occurrences of chordFrom
+    const cleanedChordsTo = exercise.chordsTo.filter(chord => chord !== exercise.chordFrom);
+    
+    const chordsList = generateChordList(exercise.chordFrom, cleanedChordsTo);
     if (chordsList.length === 0) return;
 
     let currentIndex = 0;
