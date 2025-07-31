@@ -26,7 +26,11 @@
                 </select>
                 <div class="duration-container">
                     <label class="duration-label" for="spiderDuration">Duration (minutes):</label>
-                    <input class="duration-input" type="number" id="spiderDuration" name="duration" min="1" max="5" value="1">
+                    <div class="duration-controls">
+                        <button type="button" class="duration-btn minus-btn" data-target="spiderDuration">-</button>
+                        <input class="duration-input" type="number" id="spiderDuration" name="duration" min="1" max="10" value="1" readonly>
+                        <button type="button" class="duration-btn plus-btn" data-target="spiderDuration">+</button>
+                    </div>
                 </div>
                 <button class="add-button">Add to Queue</button>
             </div>
@@ -43,7 +47,11 @@
                 </select>
                 <div class="duration-container">
                     <label class="duration-label" for="chordFromToDuration">Duration (minutes):</label>
-                    <input class="duration-input" type="number" id="chordFromToDuration" name="duration" min="1" max="5" value="1">
+                    <div class="duration-controls">
+                        <button type="button" class="duration-btn minus-btn" data-target="chordFromToDuration">-</button>
+                        <input class="duration-input" type="number" id="chordFromToDuration" name="duration" min="1" max="10" value="1" readonly>
+                        <button type="button" class="duration-btn plus-btn" data-target="chordFromToDuration">+</button>
+                    </div>
                 </div>
                 <button class="add-button">Add to Queue</button>
             </div>
@@ -57,7 +65,11 @@
                 </select>
                 <div class="duration-container">
                     <label class="duration-label" for="randomChordsDuration">Duration (minutes):</label>
-                    <input class="duration-input" type="number" id="randomChordsDuration" name="duration" min="1" max="5" value="1">
+                    <div class="duration-controls">
+                        <button type="button" class="duration-btn minus-btn" data-target="randomChordsDuration">-</button>
+                        <input class="duration-input" type="number" id="randomChordsDuration" name="duration" min="1" max="10" value="1" readonly>
+                        <button type="button" class="duration-btn plus-btn" data-target="randomChordsDuration">+</button>
+                    </div>
                 </div>
                 <button class="add-button">Add to Queue</button>
             </div>
@@ -81,7 +93,11 @@
                 </div>
                 <div class="duration-container">
                     <label class="duration-label" for="strummingDuration">Duration (minutes):</label>
-                    <input class="duration-input" type="number" id="strummingDuration" name="duration" min="1" max="5" value="1">
+                    <div class="duration-controls">
+                        <button type="button" class="duration-btn minus-btn" data-target="strummingDuration">-</button>
+                        <input class="duration-input" type="number" id="strummingDuration" name="duration" min="1" max="10" value="1" readonly>
+                        <button type="button" class="duration-btn plus-btn" data-target="strummingDuration">+</button>
+                    </div>
                 </div>
                 <button class="add-button">Add to Queue</button>
             </div>

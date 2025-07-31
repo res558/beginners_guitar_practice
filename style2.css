@@ -133,6 +133,7 @@ select[multiple] {
 .duration-container {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
     margin-top: 8px;
     margin-bottom: 0;
@@ -145,20 +146,79 @@ select[multiple] {
     font-weight: 500;
 }
 
-.duration-input {
-    width: 80px;
-    font-size: 0.95em;
-    padding: 4px 6px;
+.duration-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.duration-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: none;
     border-radius: 6px;
-    border: 1px solid var(--border);
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.duration-btn:hover {
+    background: var(--hover-bg);
+    transform: scale(1.05);
+}
+
+.duration-btn:active {
+    transform: scale(0.95);
+}
+
+.duration-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.duration-input {
     background: var(--card-bg);
     color: var(--primary-text);
-    transition: border-color 0.2s ease;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    width: 60px;
+    height: 40px;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    cursor: pointer;
+    width: auto !important;
+}
+
+input[type="number"].duration-input {
+  width: auto; /* or your desired fixed width like 60px */
+}
+
+
+.duration-input::-webkit-outer-spin-button,
+.duration-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 .duration-input:focus {
-    outline: none;
     border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.2);
 }
 
 /* Strumming Pattern */
@@ -476,13 +536,30 @@ select[multiple] {
 
     /* Responsive Duration Container */
     .duration-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .duration-controls {
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .duration-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1.3em;
+    }
+
+    .duration-input {
+        width: 50px;
+        height: 35px;
+        font-size: 0.9rem;
     }
 
     .duration-label {
-        margin-bottom: 4px;
+        text-align: center;
+        margin-bottom: 0;
     }
 }
 

@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     populateSelects();
     loadExerciseList();
     setupEventListeners();
+    setupDurationControls();
     setupQueueUI();
 });
 
@@ -416,4 +417,134 @@ function updateQueueIndices() {
             removeBtn.onclick = () => removeQueueItem(i);
         }
     });
+}
+
+// Duration controls functionality
+function setupDurationControls() {
+    let holdInterval = null;
+    let holdTimeout = null;
+
+    // Helper function to start hold-to-repeat functionality
+    function startHoldToRepeat(action) {
+        // Clear any existing intervals
+        clearHoldToRepeat();
+        
+        // Execute immediately
+        action();
+        
+        // Start with a delay, then repeat faster
+        holdTimeout = setTimeout(() => {
+            holdInterval = setInterval(action, 150); // Repeat every 150ms
+        }, 300); // Initial delay of 300ms
+    }
+
+    // Helper function to stop hold-to-repeat functionality
+    function clearHoldToRepeat() {
+        if (holdInterval) {
+            clearInterval(holdInterval);
+            holdInterval = null;
+        }
+        if (holdTimeout) {
+            clearTimeout(holdTimeout);
+            holdTimeout = null;
+        }
+    }
+
+    // Add event listeners to all duration buttons
+    document.querySelectorAll('.duration-btn').forEach(btn => {
+        const targetId = btn.getAttribute('data-target');
+        const isPlus = btn.classList.contains('plus-btn');
+        const targetInput = document.getElementById(targetId);
+
+        if (!targetInput) return;
+
+        const action = () => {
+            let currentValue = parseInt(targetInput.value) || 1;
+            let newValue;
+
+            if (isPlus) {
+                newValue = Math.min(currentValue + 1, 10); // Max 10 minutes
+            } else {
+                newValue = Math.max(currentValue - 1, 1); // Min 1 minute
+            }
+
+            targetInput.value = newValue;
+            
+            // Update button states
+            updateDurationButtonStates(targetInput);
+        };
+
+        // Mouse events for desktop
+        btn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            startHoldToRepeat(action);
+        });
+
+        btn.addEventListener('mouseup', clearHoldToRepeat);
+        btn.addEventListener('mouseleave', clearHoldToRepeat);
+
+        // Touch events for mobile
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            startHoldToRepeat(action);
+        });
+
+        btn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            clearHoldToRepeat();
+        });
+
+        btn.addEventListener('touchcancel', clearHoldToRepeat);
+
+        // Single click fallback
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+        });
+    });
+
+    // Setup input tap-to-edit functionality
+    document.querySelectorAll('.duration-input').forEach(input => {
+        // Make input editable on mobile tap
+        input.addEventListener('click', () => {
+            if (window.innerWidth <= 600) { // Mobile breakpoint
+                input.removeAttribute('readonly');
+                input.select();
+            }
+        });
+
+        // Validate input on blur
+        input.addEventListener('blur', () => {
+            let value = parseInt(input.value) || 1;
+            value = Math.max(1, Math.min(10, value)); // Clamp between 1-10
+            input.value = value;
+            input.setAttribute('readonly', 'true');
+            updateDurationButtonStates(input);
+        });
+
+        // Handle enter key
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                input.blur();
+            }
+        });
+
+        // Initial button state setup
+        updateDurationButtonStates(input);
+    });
+}
+
+// Update button disabled states based on current value
+function updateDurationButtonStates(input) {
+    const targetId = input.id;
+    const currentValue = parseInt(input.value) || 1;
+    
+    const minusBtn = document.querySelector(`.minus-btn[data-target="${targetId}"]`);
+    const plusBtn = document.querySelector(`.plus-btn[data-target="${targetId}"]`);
+
+    if (minusBtn) {
+        minusBtn.disabled = currentValue <= 1;
+    }
+    if (plusBtn) {
+        plusBtn.disabled = currentValue >= 10;
+    }
 }
