@@ -4,7 +4,7 @@
 
 import { createTimer } from './timer.js';
 import { getBPM, setBPM, playTick, setupMetronomeUI } from './metronome.js';
-import { getReady, updateTitle, updateTimerLabel, loadExerciseList, setupThemeToggle } from './helpers.js';
+import { updateTitle, updateTimerLabel, loadExerciseList, setupThemeToggle } from './helpers.js';
 
 class ExerciseController {
     constructor() {
@@ -112,18 +112,13 @@ class ExerciseController {
         this.currentIndex = index;
         this.currentExercise = this.exercises[index];
 
-        // Update navigation buttons but disable them during countdown
+        // Update navigation buttons and disable them during exercise startup
         this.updateNavigationButtons(this.currentIndex, this.exercises.length);
         this.disableNavigation();
 
-        try {
-            // Prepare UI
-            await getReady(this.currentExercise.name, this.currentExercise.duration, this.currentExercise.type);
-        } catch (error) {
-            // If countdown was cancelled, re-enable navigation and exit
-            this.enableNavigation();
-            return;
-        }
+        // Prepare UI - update title and timer
+        updateTitle(this.currentExercise.name, this.currentExercise.type);
+        updateTimerLabel(this.currentExercise.duration * 60);
 
         // Create timer
         this.timer = createTimer(
@@ -155,6 +150,12 @@ class ExerciseController {
             // Start timer and re-enable navigation
             this.timer.start();
             this.enableNavigation();
+            
+            // Auto-pause the exercise so user needs to press Play to begin
+            // This happens after the exercise content is rendered
+            setTimeout(() => {
+                this.pause();
+            }, 100); // Small delay to ensure content is rendered
         } catch (error) {
             console.error('Error loading exercise module:', error);
             this.cleanup();
