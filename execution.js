@@ -199,6 +199,15 @@ class ExerciseController {
         this.currentIndex = index;
         this.currentExercise = this.exercises[index];
 
+        // Google Analytics tracking for exercise queue start (only for first exercise)
+        if (this.currentIndex === 0 && typeof gtag !== 'undefined') {
+            gtag('event', 'exercise_queue_start', {
+                event_category: 'exercise_flow',
+                event_label: 'exercises',
+                value: this.exercises.length
+            });
+        }
+
         // Update navigation buttons and disable them during exercise startup
         this.updateNavigationButtons(this.currentIndex, this.exercises.length);
         this.disableNavigation();
@@ -262,6 +271,16 @@ class ExerciseController {
             await this.cleanup();
             this.playButton.textContent = 'Play';
             updateTitle('Workout Complete!');
+            
+            // Google Analytics tracking for exercise queue finished
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'exercise_queue_finished', {
+                    event_category: 'exercise_flow',
+                    event_label: 'exercises',
+                    value: this.exercises.length
+                });
+            }
+            
             this.showFireworksCelebration();
             this.disableNavigation();
         }

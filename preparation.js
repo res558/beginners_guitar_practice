@@ -224,6 +224,15 @@ function setupEventListeners() {
                 alert('Add at least one exercise to the queue.');
                 return;
             }
+            
+            // Google Analytics tracking
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'button_click', {
+                    event_category: 'interaction',
+                    event_label: 'open_practice'
+                });
+            }
+            
             window.location.href = 'execution.html';
         });
     });
@@ -252,6 +261,30 @@ function addExercise(type, card) {
         exerciseList.push(exercise);
         saveExerciseList();
         renderQueue();
+        
+        // Google Analytics tracking
+        let eventLabel = '';
+        switch (type) {
+            case 1: // Spider Walk
+                eventLabel = 'add_spider_to_queue';
+                break;
+            case 2: // Chord Changes From/To
+                eventLabel = 'add_chords_from_to_to_queue';
+                break;
+            case 3: // Random Chord Changes
+                eventLabel = 'add_chords_random_to_queue';
+                break;
+            case 4: // Strumming
+                eventLabel = 'add_strumming_to_queue';
+                break;
+        }
+        
+        if (eventLabel && typeof gtag !== 'undefined') {
+            gtag('event', 'button_click', {
+                event_category: 'interaction',
+                event_label: eventLabel
+            });
+        }
     }
 }
 
@@ -388,6 +421,14 @@ function renderQueue() {
 
 // Remove exercise from queue with animation
 function removeQueueItem(index) {
+    // Google Analytics tracking
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'button_click', {
+            event_category: 'interaction',
+            event_label: 'remove_from_queue'
+        });
+    }
+
     const item = document.querySelector(`.queue-item[data-index="${index}"]`);
     if (!item) return;
 
