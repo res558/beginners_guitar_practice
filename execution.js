@@ -15,6 +15,7 @@ class ExerciseController {
         this.currentExercise = null;
         this.currentCleanup = null;
         this.timer = null;
+        this.countdownInterval = null; // Track countdown interval
 
         // UI Elements
         this.playButton = document.getElementById('playButton');
@@ -75,20 +76,100 @@ class ExerciseController {
     }
 
     /**
+     * Show countdown before starting/resuming exercise
+     * @returns {Promise} Resolves when countdown is complete
+     */
+    async showCountdown() {
+        // Prevent multiple countdowns from starting
+        if (this.countdownInterval) {
+            return; // Already counting down
+        }
+        
+        return new Promise((resolve, reject) => {
+            const executionArea = document.getElementById('executionArea');
+
+            // Create countdown overlay
+            const countdownDiv = document.createElement('div');
+            countdownDiv.style.position = 'absolute';
+            countdownDiv.style.top = '0';
+            countdownDiv.style.left = '0';
+            countdownDiv.style.width = '100%';
+            countdownDiv.style.height = '100%';
+            countdownDiv.style.display = 'flex';
+            countdownDiv.style.justifyContent = 'center';
+            countdownDiv.style.alignItems = 'center';
+            countdownDiv.style.fontSize = '5em';
+            countdownDiv.style.fontWeight = 'bold';
+            countdownDiv.style.color = '#00fff7';
+            countdownDiv.style.zIndex = '9999';
+            countdownDiv.style.pointerEvents = 'none';
+            countdownDiv.style.textShadow = `
+                -3px -3px 0 #000, 
+                3px -3px 0 #000, 
+                -3px  3px 0 #000, 
+                3px  3px 0 #000
+                `;
+
+            executionArea.appendChild(countdownDiv);
+
+            let count = 3;
+            countdownDiv.textContent = count;
+
+            this.countdownInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownDiv.textContent = count;
+                } else {
+                    clearInterval(this.countdownInterval);
+                    this.countdownInterval = null;
+                    this.cancelCountdown = null;
+                    countdownDiv.remove();
+                    resolve();
+                }
+            }, 1000);
+
+            // Allow external cancellation
+            this.cancelCountdown = () => {
+                if (this.countdownInterval) {
+                    clearInterval(this.countdownInterval);
+                    this.countdownInterval = null;
+                }
+                this.cancelCountdown = null;
+                countdownDiv.remove();
+                reject(new Error('Countdown cancelled'));
+            };
+        });
+    }
+
+    /**
      * Start or resume exercise
      */
     async play() {
         if (!this.exercises.length) return;
 
-        this.isPaused = false;
+        // Change button to Pause immediately when countdown starts
+        // But keep exercise paused until countdown finishes
         this.playButton.textContent = 'Pause';
 
-        if (!this.currentExercise) {
-            // Start new exercise
-            await this.startExercise(this.currentIndex);
-        } else {
-            // Resume current exercise
-            this.timer?.resume();
+        try {
+            // Show countdown before starting/resuming
+            await this.showCountdown();
+
+            // Only after countdown completes, actually start or resume exercise
+            this.isPaused = false;
+            
+            if (!this.currentExercise) {
+                // Start new exercise
+                await this.startExercise(this.currentIndex);
+            } else {
+                // Resume current exercise
+                this.timer?.resume();
+            }
+        } catch (error) {
+            // Countdown was cancelled, reset button state
+            this.isPaused = true;
+            this.playButton.textContent = 'Play';
+            console.log('Countdown cancelled');
         }
     }
 
@@ -96,6 +177,12 @@ class ExerciseController {
      * Pause exercise
      */
     pause() {
+        // Cancel countdown if it's running
+        if (this.cancelCountdown) {
+            this.cancelCountdown();
+            this.cancelCountdown = null;
+        }
+        
         this.isPaused = true;
         this.playButton.textContent = 'Play';
         this.timer?.pause();
@@ -150,12 +237,15 @@ class ExerciseController {
             // Start timer and re-enable navigation
             this.timer.start();
             this.enableNavigation();
-            
+
             // Auto-pause the exercise so user needs to press Play to begin
             // This happens after the exercise content is rendered
-            setTimeout(() => {
-                this.pause();
-            }, 100); // Small delay to ensure content is rendered
+            // Only auto-pause if this is NOT the first exercise (index > 0)
+            if (this.currentIndex > 0) {
+                setTimeout(() => {
+                    this.pause();
+                }, 100); // Small delay to ensure content is rendered
+            }
         } catch (error) {
             console.error('Error loading exercise module:', error);
             this.cleanup();
@@ -286,6 +376,12 @@ class ExerciseController {
      */
     async previous() {
         if (this.currentIndex > 0) {
+            // Cancel any ongoing countdown
+            if (this.cancelCountdown) {
+                this.cancelCountdown();
+                this.cancelCountdown = null;
+            }
+
             await this.startExercise(this.currentIndex - 1);
             this.updateNavigationButtons(this.currentIndex, this.exercises.length);
         }
@@ -296,6 +392,12 @@ class ExerciseController {
      */
     async next() {
         if (this.currentIndex < this.exercises.length - 1) {
+            // Cancel any ongoing countdown
+            if (this.cancelCountdown) {
+                this.cancelCountdown();
+                this.cancelCountdown = null;
+            }
+
             await this.startExercise(this.currentIndex + 1);
             this.updateNavigationButtons(this.currentIndex, this.exercises.length);
         }
@@ -366,7 +468,7 @@ class ExerciseController {
      */
     disableNavigation() {
         this.prevButton.disabled = true;
-        this.nextButton.disabled = true;    
+        this.nextButton.disabled = true;
         this.playButton.disabled = true;
         this.prevButton.classList.add('disabled');
         this.nextButton.classList.add('disabled');
