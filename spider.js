@@ -184,13 +184,24 @@ export async function execute(exercise, containerId, helpers) {
             line.setAttribute('x2', x);
             line.setAttribute('y2', STRING_SPACING * STRINGS.length);
             
-            if (col === 1) { // Highlight first column (current position)
+            // Highlight the line where notes should arrive (same as old first column position)
+            if (col === 0) { 
                 line.classList.add('fret-highlight');
             } else {
                 line.classList.add('fretline');
             }
             svg.appendChild(line);
         }
+        
+        // Draw the main highlight line where notes arrive
+        const highlightLine = document.createElementNS(SVG_NS, 'line');
+        const highlightX = 40 + ((VIEW_WIDTH - 80) / NUM_COLUMNS) * 0.5; // Same as NOTE_SPACING * 0.5
+        highlightLine.setAttribute('x1', highlightX);
+        highlightLine.setAttribute('y1', STRING_SPACING);
+        highlightLine.setAttribute('x2', highlightX);
+        highlightLine.setAttribute('y2', STRING_SPACING * STRINGS.length);
+        highlightLine.classList.add('fret-highlight');
+        svg.appendChild(highlightLine);
     }
 
     // Helper function to parse spider map position
@@ -213,61 +224,105 @@ export async function execute(exercise, containerId, helpers) {
         return newColumn;
     }
 
-    // Render or update fret numbers at specific column
-    function renderTextAt(colIndex, mapEntry) {
-        if (!svg || !mapEntry || mapEntry === ',' || mapEntry === '') return;
-
-        const [stringName, fret] = mapEntry.split(',');
-        if (!stringName || !fret || !(stringName in STRING_MAP)) return;
-
-        const stringIdx = STRING_MAP[stringName];
-        let x = 40 + (colIndex + 0.5) * ((VIEW_WIDTH - 80) / NUM_COLUMNS);
-        let y = STRING_SPACING * (stringIdx + 1);
-
-        const txt = document.createElementNS(SVG_NS, 'text');
-        
-        // Highlight first column (current position) with special positioning and styling
-        if (colIndex === 0) {
-            x -= 10; // Subtract 10 from X position for first column
-            y += 15;  // Add 7 to Y position for first column
-            txt.setAttribute('x', x);
-            txt.setAttribute('y', y);
-            txt.textContent = fret;
-            txt.classList.add('fret-text-current');
-            txt.style.fontSize = '4em'; // Make font size 4em for first column
-        } else {
-            txt.setAttribute('x', x);
-            txt.setAttribute('y', y);
-            txt.textContent = fret;
-            txt.classList.add('fret-text');
-            txt.style.fontSize = '3em'; // Make font size 3em for other columns
+    // Initialize note positions and data
+    let notes = []; // Array of {string, fret, x, highlighted}
+    let spiderMapIndex = 0;
+    let lastBeatTime = Date.now();
+    let animationStartTime = Date.now();
+    let scrollOffset = 0; // Pixel offset for smooth scrolling
+    
+    // Constants for positioning
+    const NOTE_SPACING = (VIEW_WIDTH - 80) / 8; // Distance between notes (same as old column spacing)
+    const HIGHLIGHT_X = 40 + NOTE_SPACING * 0.5; // X position of the highlight line
+    
+    // Initialize notes with first 8 positions
+    function initializeNotes() {
+        notes = [];
+        for (let i = 0; i < 8; i++) {
+            const position = exercise.spiderMap[i % exercise.spiderMap.length];
+            const parsedPosition = parseSpiderPosition(position);
+            
+            // Add each string,fret pair as a note
+            Object.entries(parsedPosition).forEach(([string, fret]) => {
+                notes.push({
+                    string: string,
+                    fret: fret,
+                    x: 40 + (i + 0.5) * NOTE_SPACING, // Initial X position
+                    highlighted: i === 0 // First note starts highlighted
+                });
+            });
         }
-        
-        svg.appendChild(txt);
-        textElements.push(txt);
+        spiderMapIndex = 8 % exercise.spiderMap.length;
     }
-
-    // Initialize data window with first 8 positions
-    let dataWindow = Array(8).fill(null).map((_, index) => {
-        const position = exercise.spiderMap[index % exercise.spiderMap.length];
-        return parseSpiderPosition(position);
-    });
-    let spiderMapIndex = 8 % exercise.spiderMap.length; // Start from the 9th position (or wrap)
-
-    // Function to update data window with next position
-    function updateDataWindow() {
-        // Remove first column
-        dataWindow.shift();
-        
-        // Add new column at the end
+    
+    // Add a new note at the rightmost position
+    function addNewNote() {
         const position = exercise.spiderMap[spiderMapIndex];
-        dataWindow.push(parseSpiderPosition(position));
+        const parsedPosition = parseSpiderPosition(position);
         
-        // Update spider map index
+        Object.entries(parsedPosition).forEach(([string, fret]) => {
+            notes.push({
+                string: string,
+                fret: fret,
+                x: 40 + 7.5 * NOTE_SPACING, // Start at the 8th position
+                highlighted: false
+            });
+        });
+        
         spiderMapIndex = (spiderMapIndex + 1) % exercise.spiderMap.length;
     }
+    
+    // Update note positions and manage highlighting
+    function updateNotes(currentTime, bpm) {
+        const beatInterval = 60000 / bpm; // Time between beats in milliseconds
+        
+        // Check if it's time for the next beat
+        if (currentTime - lastBeatTime >= beatInterval) {
+            lastBeatTime = currentTime;
+            animationStartTime = currentTime;
+            scrollOffset = 0;
+            
+            // Move all notes one position to the left
+            notes.forEach(note => {
+                note.x -= NOTE_SPACING;
+                note.highlighted = false; // Clear all highlights
+            });
+            
+            // Remove notes that have moved off screen (x < 0)
+            notes = notes.filter(note => note.x > 0);
+            
+            // Highlight notes that are now at the highlight position
+            notes.forEach(note => {
+                const distanceToHighlight = Math.abs(note.x - HIGHLIGHT_X);
+                if (distanceToHighlight < NOTE_SPACING * 0.1) { // Within 10% of spacing
+                    note.highlighted = true;
+                }
+            });
+            
+            // Add new note if we need more notes
+            const rightmostX = Math.max(...notes.map(n => n.x), 0);
+            if (rightmostX < 40 + 7 * NOTE_SPACING) {
+                addNewNote();
+            }
+            
+            return true; // Beat occurred
+        } else {
+            // Smooth scrolling between beats
+            const timeSinceLastBeat = currentTime - lastBeatTime;
+            const progressToNextBeat = timeSinceLastBeat / beatInterval;
+            const targetOffset = progressToNextBeat * NOTE_SPACING;
+            
+            // Update visual positions for smooth scrolling
+            notes.forEach(note => {
+                // Don't modify the actual note.x, just calculate display position
+            });
+            
+            scrollOffset = targetOffset;
+            return false; // No beat occurred
+        }
+    }
 
-    // Function to render current data window on SVG
+    // Function to render all notes on SVG
     function renderDataWindow() {
         if (!svg) return;
         
@@ -279,12 +334,31 @@ export async function execute(exercise, containerId, helpers) {
         });
         textElements = [];
         
-        // Render each column's data
-        dataWindow.forEach((columnData, colIndex) => {
-            if (columnData) {
-                Object.entries(columnData).forEach(([string, fret]) => {
-                    renderTextAt(colIndex, `${string},${fret}`);
-                });
+        // Render each note
+        notes.forEach(note => {
+            const displayX = note.x - scrollOffset; // Apply smooth scrolling offset
+            
+            if (displayX > 0 && displayX < VIEW_WIDTH) { // Only render visible notes
+                const stringIdx = STRING_MAP[note.string];
+                const y = STRING_SPACING * (stringIdx + 1);
+                
+                const txt = document.createElementNS(SVG_NS, 'text');
+                txt.setAttribute('x', displayX);
+                txt.setAttribute('y', y);
+                txt.textContent = note.fret;
+                
+                if (note.highlighted) {
+                    txt.classList.add('fret-text-current');
+                    txt.style.fontSize = '4em';
+                    txt.setAttribute('y', y+25);
+                    txt.setAttribute('x', displayX-20);
+                } else {
+                    txt.classList.add('fret-text');
+                    txt.style.fontSize = '3em';
+                }
+                
+                svg.appendChild(txt);
+                textElements.push(txt);
             }
         });
     }
@@ -292,11 +366,11 @@ export async function execute(exercise, containerId, helpers) {
     // Initialize SVG fretboard
     createSVGFretboard();
     
-    // Initial render of the data window
-    renderDataWindow();
+    // Initialize notes
+    initializeNotes();
     
-    // Initialize state
-    let previousTick = Date.now();
+    // Initial render of the notes
+    renderDataWindow();
 
     /**
      * Start animation loop
@@ -315,22 +389,17 @@ export async function execute(exercise, containerId, helpers) {
 
             const now = Date.now();
             const bpm = helpers.getBPM?.() || 40;
-            const interval = 60000 / bpm;
 
-            if (now - previousTick >= interval) {
-                // Don't trigger events if cleaned up
-                if (!isCleanedUp) {
-                    // Trigger metronome tick
-                    helpers.metronomeTick();
-                    
-                    // Update and render next position
-                    updateDataWindow();
-                    renderDataWindow();
-                    
-                    // Update previous tick time
-                    previousTick = now;
-                }
+            // Update notes position and handle beat timing
+            const beatOccurred = updateNotes(now, bpm);
+            
+            // Trigger metronome on beat
+            if (beatOccurred && !isCleanedUp) {
+                helpers.metronomeTick();
             }
+            
+            // Re-render notes with their new positions
+            renderDataWindow();
 
             if (!isCleanedUp && helpers.timer.getRemaining() > 0) {
                 animationFrameId = requestAnimationFrame(loop);
