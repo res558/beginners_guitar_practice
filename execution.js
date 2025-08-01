@@ -3,7 +3,7 @@
  */
 
 import { createTimer } from './timer.js';
-import { getBPM, setBPM, playTick, setupMetronomeUI } from './metronome.js';
+import { getBPM, setBPM, playTick, playTock, setupMetronomeUI, ensureMaxVolume } from './metronome.js';
 import { updateTitle, updateTimerLabel, loadExerciseList, setupThemeToggle } from './helpers.js';
 
 class ExerciseController {
@@ -225,11 +225,15 @@ class ExerciseController {
 
         // Load and start exercise module
         try {
+            // Ensure metronome is at maximum volume for consistent playback
+            ensureMaxVolume();
+
             const module = await this.moduleMap[this.currentExercise.type]();
 
             // Helper functions for exercise modules
             const helpers = {
                 metronomeTick: playTick,
+                metronomeTock: playTock,
                 getBPM,
                 setBPM,
                 timer: this.timer,

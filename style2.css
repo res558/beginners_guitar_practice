@@ -563,6 +563,34 @@ input[type="number"].duration-input {
     }
 }
 
-input.duration-input {
-  margin-bottom: 0;
+.link_github {
+  width: 100%;
+  text-align: center;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Style the link itself */
+.link_github a {
+  color: var(--link-color, #007bff);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.link_github a:hover {
+  text-decoration: underline;
+}
+
+/* Only apply on wider screens */
+@media (min-width: 768px) {
+  .link_github {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+    text-align: left;
+    margin: 0;
+    z-index: 1000;
+  }
 }

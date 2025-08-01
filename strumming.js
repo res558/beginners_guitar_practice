@@ -257,8 +257,14 @@ export async function execute(exercise, containerId, helpers) {
 
                     highlightColumn(index, active);
 
-                    if (active && index % 2 === 0) {
-                        helpers.metronomeTick();
+                    if (active) {
+                        if (index % 2 === 0) {
+                            // Down stroke (even indices: 0, 2, 4, 6)
+                            helpers.metronomeTick();
+                        } else {
+                            // Up stroke (odd indices: 1, 3, 5, 7)
+                            helpers.metronomeTock();
+                        }
                     }
 
                     if (index === 0 && subTickCount !== 0) {
@@ -300,8 +306,14 @@ export async function execute(exercise, containerId, helpers) {
 
                     highlightColumn(index, active);
 
-                    if (active && index % 2 === 0) {
-                        helpers.metronomeTick();
+                    if (active) {
+                        if (index % 2 === 0) {
+                            // Down stroke (even indices: 0, 2, 4, 6)
+                            helpers.metronomeTick();
+                        } else {
+                            // Up stroke (odd indices: 1, 3, 5, 7)
+                            helpers.metronomeTock();
+                        }
                     }
 
                     if (index === 0 && subTickCount !== 0) {
@@ -346,8 +358,14 @@ export async function execute(exercise, containerId, helpers) {
 
                 highlightColumn(index, active);
 
-                if (active && index % 2 === 0) {
-                    helpers.metronomeTick();
+                if (active) {
+                    if (index % 2 === 0) {
+                        // Down stroke (even indices: 0, 2, 4, 6)
+                        helpers.metronomeTick();
+                    } else {
+                        // Up stroke (odd indices: 1, 3, 5, 7)
+                        helpers.metronomeTock();
+                    }
                 }
 
                 subTickCount++;

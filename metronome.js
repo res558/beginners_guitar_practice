@@ -5,10 +5,13 @@
 // Web Audio API context and buffer
 const context = new (window.AudioContext || window.webkitAudioContext)();
 let tickBuffer = null;
+let tockBuffer = null; // Add tock buffer for up strokes
+let gainNode = null; // Add gain node for volume control
 
 // Metronome state
 let currentBpm = 40;
 let isSoundEnabled = false;
+let metronomeVolume = 1.0; // Volume level (0.0 to 1.0)
 
 // UI Elements
 let bpmInput = null;
@@ -31,6 +34,19 @@ async function loadTickBuffer() {
         tickBuffer = await context.decodeAudioData(arrayBuffer);
     } catch (e) {
         console.error('Error loading tick sound:', e);
+    }
+}
+
+/**
+ * Load and decode the tock sound buffer
+ */
+async function loadTockBuffer() {
+    try {
+        const response = await fetch('metronome-tock.mp3');
+        const arrayBuffer = await response.arrayBuffer();
+        tockBuffer = await context.decodeAudioData(arrayBuffer);
+    } catch (e) {
+        console.error('Error loading tock sound:', e);
     }
 }
 
@@ -109,14 +125,65 @@ function setSoundEnabled(enabled, saveSettings = true) {
 }
 
 /**
+ * Set metronome volume level
+ * @param {number} volume - Volume level (0.0 to 1.0)
+ */
+export function setMetronomeVolume(volume = 1.0) {
+    metronomeVolume = Math.min(1.0, Math.max(0.0, volume));
+    
+    // Update gain node if it exists
+    if (gainNode) {
+        gainNode.gain.value = metronomeVolume;
+    }
+}
+
+/**
+ * Ensure metronome is at maximum volume - call at exercise start
+ */
+export function ensureMaxVolume() {
+    setMetronomeVolume(1.0);
+    
+    // Also ensure audio context is resumed (important for mobile)
+    if (context.state === 'suspended') {
+        context.resume();
+    }
+}
+
+/**
  * Play metronome tick if sound is enabled
  */
 export function playTick() {
     if (!isSoundEnabled || !tickBuffer) return;
 
+    // Create gain node if it doesn't exist
+    if (!gainNode) {
+        gainNode = context.createGain();
+        gainNode.connect(context.destination);
+        gainNode.gain.value = metronomeVolume;
+    }
+
     const source = context.createBufferSource();
     source.buffer = tickBuffer;
-    source.connect(context.destination);
+    source.connect(gainNode);
+    source.start();
+}
+
+/**
+ * Play metronome tock if sound is enabled (for up strokes)
+ */
+export function playTock() {
+    if (!isSoundEnabled || !tockBuffer) return;
+
+    // Create gain node if it doesn't exist
+    if (!gainNode) {
+        gainNode = context.createGain();
+        gainNode.connect(context.destination);
+        gainNode.gain.value = metronomeVolume;
+    }
+
+    const source = context.createBufferSource();
+    source.buffer = tockBuffer;
+    source.connect(gainNode);
     source.start();
 }
 
@@ -180,6 +247,9 @@ export function setupMetronomeUI() {
 
     // Load tick sound buffer
     loadTickBuffer();
+    
+    // Load tock sound buffer
+    loadTockBuffer();
 
     // Resume AudioContext on first interaction
     window.addEventListener('click', () => {
@@ -283,10 +353,15 @@ export function setupMetronomeUI() {
  */
 export function cleanup() {
     clearHoldToRepeat();
+    if (gainNode) {
+        gainNode.disconnect();
+        gainNode = null;
+    }
     if (context) {
         context.close();
     }
     tickBuffer = null;
+    tockBuffer = null;
 }
 
 // Handle page unload

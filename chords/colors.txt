@@ -1,0 +1,4 @@
+1 = yellow = ffef00
+2 = purple = ee54e8
+3 = green = 00ff55
+4 = red = ff3a3a
